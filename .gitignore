@@ -1,0 +1,14 @@
+*.iml
+.idea/
+
+*.tfvars
+*.tfstate*
+.terraform
+.terraform.lock.hcl
+
+**/venv*/
+
+**/*zip
+
+.aidigestignore
+codebase.md
