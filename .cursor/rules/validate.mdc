@@ -1,0 +1,6 @@
+---
+description: 
+globs: *.tf
+alwaysApply: false
+---
+Run `terraform validate` after making changes to a Terraform file
