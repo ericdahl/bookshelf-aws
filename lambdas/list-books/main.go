@@ -1,58 +1,92 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 )
 
-// Book represents a book record.
+const tableName = "books"
+
+// ddbClient is the DynamoDB client.
+var ddbClient *dynamodb.Client
+
+// Book represents a book record from DynamoDB.
 type Book struct {
-	ID     string   `json:"id"`
-	Title  string   `json:"title"`
-	Author string   `json:"author"`
-	Status string   `json:"status"`
-	Rating int      `json:"rating,omitempty"`
-	Review string   `json:"review,omitempty"`
-	Tags   []string `json:"tags,omitempty"`
+	PK     string `dynamodbav:"PK"`
+	Title  string `dynamodbav:"Title"`
+	Author string `dynamodbav:"Author"`
+	Series string `dynamodbav:"Series"`
+	Status string `dynamodbav:"status"`
+}
+
+// APIBook is the structure for the API response.
+type APIBook struct {
+	ID     string `json:"id"`
+	Title  string `json:"title"`
+	Author string `json:"author"`
+	Series string `json:"series"`
+	Status string `json:"status"`
+}
+
+func init() {
+	cfg, err := config.LoadDefaultConfig(context.TODO())
+	if err != nil {
+		log.Fatalf("unable to load SDK config, %v", err)
+	}
+	ddbClient = dynamodb.NewFromConfig(cfg)
 }
 
 // handler is the Lambda function handler.
 func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	// For this initial version, we return a static list of books.
-	// In a real application, you would fetch this from a database like DynamoDB,
-	// likely using the user's identity from the request context to fetch their books.
-	books := []Book{
-		{
-			ID:     "book_01",
-			Title:  "The Hobbit",
-			Author: "J.R.R. Tolkien",
-			Status: "reading",
-			Rating: 5,
-			Tags:   []string{"fantasy", "classic"},
-		},
-		{
-			ID:     "book_02",
-			Title:  "Dune",
-			Author: "Frank Herbert",
-			Status: "finished",
-			Rating: 5,
-			Tags:   []string{"sci-fi", "classic"},
-		},
-		{
-			ID:     "book_03",
-			Title:  "Project Hail Mary",
-			Author: "Andy Weir",
-			Status: "want-to-read",
-		},
+	// For this version, we scan the table to get all books.
+	// For a production application with a large dataset, a more efficient
+	// query approach would be recommended over a full table scan.
+	tableNameVar := tableName
+	scanOutput, err := ddbClient.Scan(context.TODO(), &dynamodb.ScanInput{
+		TableName: &tableNameVar,
+	})
+	if err != nil {
+		log.Printf("Error scanning DynamoDB: %v", err)
+		return events.APIGatewayProxyResponse{
+			StatusCode: http.StatusInternalServerError,
+			Body:       "Internal Server Error: Could not scan books",
+		}, nil
 	}
 
-	body, err := json.Marshal(books)
+	var books []Book
+	err = attributevalue.UnmarshalListOfMaps(scanOutput.Items, &books)
+	if err != nil {
+		log.Printf("Error unmarshalling DynamoDB items: %v", err)
+		return events.APIGatewayProxyResponse{
+			StatusCode: http.StatusInternalServerError,
+			Body:       "Internal Server Error: Could not process book data",
+		}, nil
+	}
+
+	// Map to API response structure
+	apiBooks := make([]APIBook, len(books))
+	for i, book := range books {
+		apiBooks[i] = APIBook{
+			ID:     strings.TrimPrefix(book.PK, "BOOK#"),
+			Title:  book.Title,
+			Author: book.Author,
+			Series: book.Series,
+			Status: book.Status,
+		}
+	}
+
+	body, err := json.Marshal(apiBooks)
 	if err != nil {
 		log.Printf("Error marshalling JSON: %v", err)
 		return events.APIGatewayProxyResponse{
@@ -84,7 +118,12 @@ func main() {
 
 		// Print the response body to stdout.
 		fmt.Println("--- Local execution ---")
-		fmt.Println(response.Body)
+		// pretty print json
+		var prettyJSON []map[string]interface{}
+		json.Unmarshal([]byte(response.Body), &prettyJSON)
+		prettyBody, _ := json.MarshalIndent(prettyJSON, "", "  ")
+		fmt.Println(string(prettyBody))
+
 	} else {
 		// Start the Lambda handler in the AWS environment.
 		lambda.Start(handler)
