@@ -1,0 +1,6 @@
+---
+description: 
+globs: *.tf
+alwaysApply: false
+---
+Run `terraform fmt` after changing any Terraform file
