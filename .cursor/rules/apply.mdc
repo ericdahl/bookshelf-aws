@@ -1,0 +1,6 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+Run `terraform apply` when prompted. Review the changes and ensure they look good before accepting the change.
