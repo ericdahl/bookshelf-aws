@@ -7,7 +7,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strings"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -23,6 +22,7 @@ var ddbClient *dynamodb.Client
 
 // Book represents a book record from DynamoDB.
 type Book struct {
+	ID     string `dynamodbav:"id"`
 	PK     string `dynamodbav:"PK"`
 	Title  string `dynamodbav:"Title"`
 	Author string `dynamodbav:"Author"`
@@ -78,7 +78,7 @@ func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 	apiBooks := make([]APIBook, len(books))
 	for i, book := range books {
 		apiBooks[i] = APIBook{
-			ID:     strings.TrimPrefix(book.PK, "BOOK#"),
+			ID:     book.ID,
 			Title:  book.Title,
 			Author: book.Author,
 			Series: book.Series,

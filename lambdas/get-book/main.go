@@ -53,7 +53,7 @@ func HandleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (
 	}
 
 	book := Book{
-		ID:     id,
+		ID:     result.Item["id"].(*types.AttributeValueMemberS).Value,
 		Title:  result.Item["Title"].(*types.AttributeValueMemberS).Value,
 		Author: result.Item["Author"].(*types.AttributeValueMemberS).Value,
 		Series: result.Item["Series"].(*types.AttributeValueMemberS).Value,

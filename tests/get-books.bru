@@ -14,6 +14,7 @@ script:post-response {
   const book = res.body.find(b => b.title === "The Way of Kings");
   test("Find 'The Way of Kings'", () => {
     expect(book).to.exist;
+    expect(book.id).to.exist;
     expect(book.author).to.equal("Brandon Sanderson");
     expect(book.series).to.equal("The Stormlight Archive");
   });

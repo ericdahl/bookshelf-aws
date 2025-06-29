@@ -5,13 +5,14 @@ meta {
 }
 
 get {
-  url: https://5piyw6j8fb.execute-api.us-east-1.amazonaws.com/prod/books/THE_WAY_OF_KINGS
+  url: https://5piyw6j8fb.execute-api.us-east-1.amazonaws.com/prod/books/a1b2c3d4-e5f6-7890-1234-567890abcdef
   body: none
   auth: inherit
 }
 
 assert {
   res.status: eq 200
+  res.body.id: eq "a1b2c3d4-e5f6-7890-1234-567890abcdef"
   res.body.title: eq "The Way of Kings"
   res.body.author: eq "Brandon Sanderson"
   res.body.series: eq "The Stormlight Archive"
