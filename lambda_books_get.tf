@@ -27,37 +27,32 @@ EOT
   }
 }
 
-resource "aws_iam_role" "books_lambda_exec_role" {
-  name = "books-lambda-exec-role"
+data "aws_iam_policy_document" "books_lambda_assume_role_policy" {
+  statement {
+    actions = ["sts:AssumeRole"]
+    principals {
+      type        = "Service"
+      identifiers = ["lambda.amazonaws.com"]
+    }
+  }
+}
 
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action = "sts:AssumeRole"
-        Effect = "Allow"
-        Principal = {
-          Service = "lambda.amazonaws.com"
-        }
-      },
-    ]
-  })
+resource "aws_iam_role" "books_lambda_exec_role" {
+  name               = "books-lambda-exec-role"
+  assume_role_policy = data.aws_iam_policy_document.books_lambda_assume_role_policy.json
+}
+
+data "aws_iam_policy_document" "dynamodb_read_policy" {
+  statement {
+    actions   = ["dynamodb:Scan", "dynamodb:GetItem"]
+    resources = ["*"]
+  }
 }
 
 resource "aws_iam_policy" "dynamodb_read_policy" {
   name        = "DynamoDBReadPolicy"
   description = "Policy to allow reading from the Books DynamoDB table"
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action   = ["dynamodb:Scan", "dynamodb:GetItem"]
-        Effect   = "Allow"
-        Resource = "*"
-      },
-    ]
-  })
+  policy      = data.aws_iam_policy_document.dynamodb_read_policy.json
 }
 
 resource "aws_iam_role_policy_attachment" "lambda_dynamodb_read" {
