@@ -5,7 +5,13 @@ meta {
 }
 
 get {
-  url: https://5piyw6j8fb.execute-api.us-east-1.amazonaws.com/prod
+  url: https://5piyw6j8fb.execute-api.us-east-1.amazonaws.com/prod/books
   body: none
   auth: inherit
+}
+
+assert {
+  res.status: eq 200
+  res.body: isArray
+  res.body.length: gte 1
 }
