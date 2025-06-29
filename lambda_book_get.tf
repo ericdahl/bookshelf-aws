@@ -26,9 +26,47 @@ EOT
   }
 }
 
+data "aws_iam_policy_document" "get_book_lambda_assume_role_policy" {
+  statement {
+    actions = ["sts:AssumeRole"]
+    principals {
+      type        = "Service"
+      identifiers = ["lambda.amazonaws.com"]
+    }
+  }
+}
+
+resource "aws_iam_role" "get_book_lambda_exec_role" {
+  name               = "get-book-lambda-exec-role"
+  assume_role_policy = data.aws_iam_policy_document.get_book_lambda_assume_role_policy.json
+}
+
+data "aws_iam_policy_document" "get_book_dynamodb_policy" {
+  statement {
+    actions   = ["dynamodb:GetItem"]
+    resources = ["*"]
+  }
+}
+
+resource "aws_iam_policy" "get_book_dynamodb_policy" {
+  name        = "GetBookDynamoDBPolicy"
+  description = "Policy to allow getting an item from the Books DynamoDB table"
+  policy      = data.aws_iam_policy_document.get_book_dynamodb_policy.json
+}
+
+resource "aws_iam_role_policy_attachment" "get_book_lambda_dynamodb_read" {
+  role       = aws_iam_role.get_book_lambda_exec_role.name
+  policy_arn = aws_iam_policy.get_book_dynamodb_policy.arn
+}
+
+resource "aws_iam_role_policy_attachment" "get_book_lambda_basic_execution" {
+  role       = aws_iam_role.get_book_lambda_exec_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+}
+
 resource "aws_lambda_function" "get_book_lambda" {
   function_name = "get-book"
-  role          = aws_iam_role.books_lambda_exec_role.arn
+  role          = aws_iam_role.get_book_lambda_exec_role.arn
   handler       = "bootstrap"
   runtime       = "provided.al2"
 
@@ -36,8 +74,8 @@ resource "aws_lambda_function" "get_book_lambda" {
   source_code_hash = filebase64sha256(data.external.build_get_book_lambda.result.filename)
 
   depends_on = [
-    aws_iam_role_policy_attachment.lambda_basic_execution,
-    aws_iam_role_policy_attachment.lambda_dynamodb_read,
+    aws_iam_role_policy_attachment.get_book_lambda_basic_execution,
+    aws_iam_role_policy_attachment.get_book_lambda_dynamodb_read,
   ]
 }
 

@@ -27,7 +27,7 @@ EOT
   }
 }
 
-data "aws_iam_policy_document" "books_lambda_assume_role_policy" {
+data "aws_iam_policy_document" "list_books_lambda_assume_role_policy" {
   statement {
     actions = ["sts:AssumeRole"]
     principals {
@@ -37,37 +37,37 @@ data "aws_iam_policy_document" "books_lambda_assume_role_policy" {
   }
 }
 
-resource "aws_iam_role" "books_lambda_exec_role" {
-  name               = "books-lambda-exec-role"
-  assume_role_policy = data.aws_iam_policy_document.books_lambda_assume_role_policy.json
+resource "aws_iam_role" "list_books_lambda_exec_role" {
+  name               = "list-books-lambda-exec-role"
+  assume_role_policy = data.aws_iam_policy_document.list_books_lambda_assume_role_policy.json
 }
 
-data "aws_iam_policy_document" "dynamodb_read_policy" {
+data "aws_iam_policy_document" "list_books_dynamodb_policy" {
   statement {
-    actions   = ["dynamodb:Scan", "dynamodb:GetItem"]
+    actions   = ["dynamodb:Scan"]
     resources = ["*"]
   }
 }
 
-resource "aws_iam_policy" "dynamodb_read_policy" {
-  name        = "DynamoDBReadPolicy"
-  description = "Policy to allow reading from the Books DynamoDB table"
-  policy      = data.aws_iam_policy_document.dynamodb_read_policy.json
+resource "aws_iam_policy" "list_books_dynamodb_policy" {
+  name        = "ListBooksDynamoDBPolicy"
+  description = "Policy to allow scanning the Books DynamoDB table"
+  policy      = data.aws_iam_policy_document.list_books_dynamodb_policy.json
 }
 
-resource "aws_iam_role_policy_attachment" "lambda_dynamodb_read" {
-  role       = aws_iam_role.books_lambda_exec_role.name
-  policy_arn = aws_iam_policy.dynamodb_read_policy.arn
+resource "aws_iam_role_policy_attachment" "list_books_lambda_dynamodb_read" {
+  role       = aws_iam_role.list_books_lambda_exec_role.name
+  policy_arn = aws_iam_policy.list_books_dynamodb_policy.arn
 }
 
-resource "aws_iam_role_policy_attachment" "lambda_basic_execution" {
-  role       = aws_iam_role.books_lambda_exec_role.name
+resource "aws_iam_role_policy_attachment" "list_books_lambda_basic_execution" {
+  role       = aws_iam_role.list_books_lambda_exec_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
 resource "aws_lambda_function" "list_books_lambda" {
   function_name = "list-books"
-  role          = aws_iam_role.books_lambda_exec_role.arn
+  role          = aws_iam_role.list_books_lambda_exec_role.arn
   handler       = "bootstrap"
   runtime       = "provided.al2"
 
@@ -75,7 +75,7 @@ resource "aws_lambda_function" "list_books_lambda" {
   source_code_hash = filebase64sha256(data.external.build_list_books_lambda.result.filename)
 
   depends_on = [
-    aws_iam_role_policy_attachment.lambda_basic_execution,
-    aws_iam_role_policy_attachment.lambda_dynamodb_read,
+    aws_iam_role_policy_attachment.list_books_lambda_basic_execution,
+    aws_iam_role_policy_attachment.list_books_lambda_dynamodb_read,
   ]
 } 
