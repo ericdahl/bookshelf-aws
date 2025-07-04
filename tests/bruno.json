@@ -5,5 +5,12 @@
   "ignore": [
     "node_modules",
     ".git"
-  ]
+  ],
+  "size": 0.0007658004760742188,
+  "filesCount": 2,
+  "presets": {
+    "requestType": "http",
+    "requestUrl": "https://9vpps5qycg.execute-api.us-east-1.amazonaws.com/prod"
+  }
+  
 }

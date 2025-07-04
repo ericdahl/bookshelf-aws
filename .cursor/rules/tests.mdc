@@ -1,0 +1,4 @@
+---
+alwaysApply: true
+---
+From the `./tests` directory run `bru run --env dev .`

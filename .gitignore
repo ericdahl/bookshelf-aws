@@ -12,3 +12,5 @@
 
 .aidigestignore
 codebase.md
+
+tests/environments/
