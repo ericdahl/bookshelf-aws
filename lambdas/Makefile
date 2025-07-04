@@ -1,37 +1,49 @@
 # This Makefile orchestrates builds for all lambdas.
 
-.PHONY: all build zip clean check fmt vet tidy
+# Automatically discover lambda directories (directories with a Makefile)
+LAMBDA_DIRS := $(shell find . -maxdepth 1 -type d -name "*" ! -name "." -exec test -f {}/Makefile \; -print | sed 's|^\./||')
 
-# Find all directories containing a Makefile (i.e., our lambda functions)
-LAMBDAS := $(shell find . -mindepth 2 -maxdepth 2 -type f -name 'Makefile' | xargs -n 1 dirname)
-
-# --- Aggregate Targets ---
+# Default target
+.PHONY: all build zip clean fmt vet tidy check $(LAMBDA_DIRS)
 
 all: build
 
-build: $(foreach lambda,$(LAMBDAS),$(lambda)/build)
+# Target to run a specific make target in all lambda directories
+define run_in_lambdas
+	@for dir in $(LAMBDA_DIRS); do \
+		echo "Running 'make $(1)' in $$dir..."; \
+		$(MAKE) -C $$dir $(1) || exit 1; \
+	done
+endef
 
-zip: $(foreach lambda,$(LAMBDAS),$(lambda)/zip)
+build:
+	$(call run_in_lambdas,build)
+
+zip:
+	$(call run_in_lambdas,zip)
 
 clean:
-	@for lambda in $(LAMBDAS); do 
-		$(MAKE) -C $lambda clean; 
-	done
+	$(call run_in_lambdas,clean)
+
+fmt:
+	$(call run_in_lambdas,fmt)
+
+vet:
+	$(call run_in_lambdas,vet)
+
+tidy:
+	$(call run_in_lambdas,tidy)
+
+check:
+	$(call run_in_lambdas,check)
+
+# Individual directory targets for convenience
+$(LAMBDA_DIRS):
+	@echo "Running 'make' in $@..."
+	$(MAKE) -C $@
+
+# Helper target to show discovered directories
+show-dirs:
+	@echo "Lambda directories: $(LAMBDA_DIRS)"
 
 
-check: $(foreach lambda,$(LAMBDAS),$(lambda)/check)
-
-fmt: $(foreach lambda,$(LAMBDAS),$(lambda)/fmt)
-
-vet: $(foreach lambda,$(LAMBDAS),$(lambda)/vet)
-
-tidy: $(foreach lambda,$(LAMBDAS),$(lambda)/tidy)
-
-# --- Dynamic Rule Generation ---
-
-# Creates a rule for each lambda-specific target (e.g., get-book/build)
-# This allows us to run 'make get-book/build' from this root Makefile
-$(foreach lambda,$(LAMBDAS),$(eval $(lambda)/% : ; @$(MAKE) -C $(lambda) $*))
-
-# Add a .PHONY rule for each generated target to ensure they always run
-.PHONY: $(foreach lambda,$(LAMBDAS),$(addprefix $(lambda)/, build zip clean check fmt vet tidy))
