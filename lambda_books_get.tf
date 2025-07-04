@@ -8,16 +8,9 @@ data "external" "build_list_books_lambda" {
   program = ["bash", "-c", <<EOT
 set -e
 SOURCE_DIR="${local.lambda_source_dir}"
-OUTPUT_DIR=$(mktemp -d)
-ZIP_PATH="$OUTPUT_DIR/lambda.zip"
-
 cd "$SOURCE_DIR"
-GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o "$OUTPUT_DIR/bootstrap" main.go
-
-cd "$OUTPUT_DIR"
-zip "$ZIP_PATH" bootstrap > /dev/null
-
-jq -n --arg filename "$ZIP_PATH" '{"filename": $filename}'
+make zip >&2
+jq -n --arg filename "$SOURCE_DIR/dist/list-books.zip" '{"filename": $filename}'
 EOT
   ]
 
