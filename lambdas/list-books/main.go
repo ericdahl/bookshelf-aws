@@ -10,9 +10,11 @@ import (
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 )
 
 const tableName = "books"
@@ -49,28 +51,59 @@ func init() {
 
 // handler is the Lambda function handler.
 func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	// For this version, we scan the table to get all books.
-	// For a production application with a large dataset, a more efficient
-	// query approach would be recommended over a full table scan.
+	status, statusOK := request.QueryStringParameters["status"]
 	tableNameVar := tableName
-	scanOutput, err := ddbClient.Scan(context.TODO(), &dynamodb.ScanInput{
-		TableName: &tableNameVar,
-	})
-	if err != nil {
-		log.Printf("Error scanning DynamoDB: %v", err)
-		return events.APIGatewayProxyResponse{
-			StatusCode: http.StatusInternalServerError,
-			Body:       "Internal Server Error: Could not scan books",
-		}, nil
-	}
 
 	var books []Book
-	err = attributevalue.UnmarshalListOfMaps(scanOutput.Items, &books)
+	var err error
+
+	if statusOK {
+		// If status is provided, query the GSI
+		gsiName := "status-gsi"
+		queryInput := &dynamodb.QueryInput{
+			TableName:              &tableNameVar,
+			IndexName:              &gsiName,
+			KeyConditionExpression: aws.String("#status = :status"),
+			ExpressionAttributeNames: map[string]string{
+				"#status": "status",
+			},
+			ExpressionAttributeValues: map[string]types.AttributeValue{
+				":status": &types.AttributeValueMemberS{Value: status},
+			},
+		}
+
+		var queryOutput *dynamodb.QueryOutput
+		queryOutput, err = ddbClient.Query(context.TODO(), queryInput)
+		if err == nil {
+			err = attributevalue.UnmarshalListOfMaps(queryOutput.Items, &books)
+		}
+	} else {
+		// If no status parameter, scan the table
+		var scanOutput *dynamodb.ScanOutput
+		scanOutput, err = ddbClient.Scan(context.TODO(), &dynamodb.ScanInput{
+			TableName: &tableNameVar,
+		})
+		if err == nil {
+			err = attributevalue.UnmarshalListOfMaps(scanOutput.Items, &books)
+		}
+	}
+
 	if err != nil {
-		log.Printf("Error unmarshalling DynamoDB items: %v", err)
+		log.Printf("Error processing DynamoDB request: %v", err)
 		return events.APIGatewayProxyResponse{
 			StatusCode: http.StatusInternalServerError,
 			Body:       "Internal Server Error: Could not process book data",
+		}, nil
+	}
+
+	if statusOK && len(books) == 0 {
+		body, _ := json.Marshal([]APIBook{})
+		return events.APIGatewayProxyResponse{
+			StatusCode: http.StatusOK,
+			Headers: map[string]string{
+				"Content-Type": "application/json",
+			},
+			Body: string(body),
 		}, nil
 	}
 
