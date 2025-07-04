@@ -26,6 +26,7 @@ var ddbClient *dynamodb.Client
 type Book struct {
 	ID     string `dynamodbav:"id"`
 	PK     string `dynamodbav:"PK"`
+	SK     string `dynamodbav:"SK"`
 	Title  string `dynamodbav:"Title"`
 	Author string `dynamodbav:"Author"`
 	Series string `dynamodbav:"Series"`
@@ -74,8 +75,15 @@ func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 
 		var queryOutput *dynamodb.QueryOutput
 		queryOutput, err = ddbClient.Query(context.TODO(), queryInput)
+		if err != nil {
+			log.Printf("Error querying DynamoDB: %v", err)
+		}
 		if err == nil {
+			log.Printf("DynamoDB items: %v", queryOutput.Items)
 			err = attributevalue.UnmarshalListOfMaps(queryOutput.Items, &books)
+			if err != nil {
+				log.Printf("Error unmarshalling items: %v", err)
+			}
 		}
 	} else {
 		// If no status parameter, scan the table

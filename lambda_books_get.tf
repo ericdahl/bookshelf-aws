@@ -37,8 +37,14 @@ resource "aws_iam_role" "list_books_lambda_exec_role" {
 
 data "aws_iam_policy_document" "list_books_dynamodb_policy" {
   statement {
-    actions   = ["dynamodb:Scan"]
-    resources = ["*"]
+    actions = [
+      "dynamodb:Scan",
+      "dynamodb:Query"
+    ]
+    resources = [
+      aws_dynamodb_table.books.arn,
+      "${aws_dynamodb_table.books.arn}/index/*",
+    ]
   }
 }
 

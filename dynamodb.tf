@@ -20,7 +20,7 @@ resource "aws_dynamodb_table" "books" {
   }
 
   global_secondary_index {
-    name            = "GSI1"
+    name            = "status-gsi"
     hash_key        = "status"
     range_key       = "PK"
     projection_type = "ALL"
