@@ -2,7 +2,6 @@
 resource "aws_apigatewayv2_api" "books_api" {
   name          = "books-api"
   protocol_type = "HTTP"
-  target        = aws_lambda_function.list_books_lambda.arn
 }
 
 resource "aws_apigatewayv2_stage" "api_stage" {
@@ -15,7 +14,7 @@ resource "aws_apigatewayv2_integration" "lambda_integration" {
   api_id           = aws_apigatewayv2_api.books_api.id
   integration_type = "AWS_PROXY"
 
-  integration_uri    = aws_lambda_function.list_books_lambda.invoke_arn
+  integration_uri        = aws_lambda_function.list_books_lambda.invoke_arn
   payload_format_version = "2.0"
 }
 
