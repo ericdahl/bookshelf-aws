@@ -3,7 +3,9 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
+	"os"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -74,5 +76,36 @@ func HandleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (
 }
 
 func main() {
-	lambda.Start(HandleRequest)
+	// If the LAMBDA_TASK_ROOT environment variable is not set, we're running locally.
+	if os.Getenv("LAMBDA_TASK_ROOT") == "" {
+		// Create a dummy request for local testing with a sample book ID.
+		request := events.APIGatewayProxyRequest{
+			PathParameters: map[string]string{
+				"id": "a1b2c3d4-e5f6-7890-1234-567890abcdef", // The Way of Kings ID
+			},
+		}
+
+		// Call the handler directly.
+		response, err := HandleRequest(context.Background(), request)
+		if err != nil {
+			log.Fatalf("FATAL: handler failed: %v", err)
+		}
+
+		// Print the response details to stdout.
+		fmt.Println("--- Local execution ---")
+		fmt.Printf("Status Code: %d\n", response.StatusCode)
+		if response.StatusCode == 200 {
+			// Pretty print JSON
+			var prettyJSON map[string]interface{}
+			json.Unmarshal([]byte(response.Body), &prettyJSON)
+			prettyBody, _ := json.MarshalIndent(prettyJSON, "", "  ")
+			fmt.Println(string(prettyBody))
+		} else {
+			fmt.Printf("Response Body: %s\n", response.Body)
+		}
+
+	} else {
+		// Start the Lambda handler in the AWS environment.
+		lambda.Start(HandleRequest)
+	}
 }
