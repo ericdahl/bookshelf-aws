@@ -1,0 +1,16 @@
+meta {
+  name: get-book-nonexistent-id
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{base_url}}/books/99999999-9999-9999-9999-999999999999
+  body: none
+  auth: inherit
+}
+
+assert {
+  res.status: eq 404
+  res.body: eq "book not found"
+} 

@@ -1,0 +1,16 @@
+meta {
+  name: get-book-special-chars
+  type: http
+  seq: 10
+}
+
+get {
+  url: {{base_url}}/books/!@#$%^&*()
+  body: none
+  auth: inherit
+}
+
+assert {
+  res.status: eq 404
+  res.body: eq "book not found"
+} 

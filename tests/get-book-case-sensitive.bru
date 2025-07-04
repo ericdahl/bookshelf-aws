@@ -1,0 +1,16 @@
+meta {
+  name: get-book-case-sensitive
+  type: http
+  seq: 11
+}
+
+get {
+  url: {{base_url}}/books/A1B2C3D4-E5F6-7890-1234-567890ABCDEF
+  body: none
+  auth: inherit
+}
+
+assert {
+  res.status: eq 404
+  res.body: eq "book not found"
+} 

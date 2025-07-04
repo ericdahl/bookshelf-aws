@@ -1,0 +1,20 @@
+meta {
+  name: get-book-eye-of-the-world
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{base_url}}/books/f6a7b8c9-d0e1-2345-6789-0abcdef12345
+  body: none
+  auth: inherit
+}
+
+assert {
+  res.status: eq 200
+  res.body.id: eq "f6a7b8c9-d0e1-2345-6789-0abcdef12345"
+  res.body.title: eq "The Eye of the World"
+  res.body.author: eq "Robert Jordan"
+  res.body.series: eq "The Wheel of Time"
+  res.body.status: eq "WANT_TO_READ"
+} 

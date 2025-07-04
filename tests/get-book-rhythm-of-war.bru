@@ -1,0 +1,20 @@
+meta {
+  name: get-book-rhythm-of-war
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{base_url}}/books/d4e5f6a7-b8c9-0123-4567-890abcdef123
+  body: none
+  auth: inherit
+}
+
+assert {
+  res.status: eq 200
+  res.body.id: eq "d4e5f6a7-b8c9-0123-4567-890abcdef123"
+  res.body.title: eq "Rhythm of War"
+  res.body.author: eq "Brandon Sanderson"
+  res.body.series: eq "The Stormlight Archive"
+  res.body.status: eq "WANT_TO_READ"
+} 

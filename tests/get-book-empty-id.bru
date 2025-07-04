@@ -1,0 +1,16 @@
+meta {
+  name: get-book-empty-id
+  type: http
+  seq: 9
+}
+
+get {
+  url: {{base_url}}/books/
+  body: none
+  auth: inherit
+}
+
+assert {
+  res.status: eq 400
+  res.body: eq "book ID is required"
+} 
