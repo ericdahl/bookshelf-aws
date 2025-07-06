@@ -1,7 +1,16 @@
-
 resource "aws_apigatewayv2_api" "books_api" {
   name          = "books-api"
   protocol_type = "HTTP"
+  description   = "Books API"
+
+  cors_configuration {
+    allow_credentials = false
+    allow_headers     = ["content-type", "x-amz-date", "authorization", "x-api-key", "x-amz-security-token", "x-amz-user-agent"]
+    allow_methods     = ["*"]
+    allow_origins     = ["*"]
+    expose_headers    = ["date", "keep-alive"]
+    max_age           = 86400
+  }
 }
 
 resource "aws_apigatewayv2_stage" "api_stage" {

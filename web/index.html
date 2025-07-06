@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bookshelf</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Nunito+Sans:wght@400;600;700&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+</head>
+<body>
+    <header>
+        <div class="app-branding">
+            <img src="icon.png" alt="Bookshelf App Icon" class="app-icon">
+            <h1>Bookshelf</h1>
+        </div>
+        <div class="controls-container">
+            <div class="view-toggle">
+                <button id="full-view" class="view-button active" title="Full View"><i class="fas fa-th"></i></button>
+                <button id="compact-view" class="view-button" title="Compact View"><i class="fas fa-list"></i></button>
+            </div>
+            <div class="search-container">
+                <input type="text" id="search-input" placeholder="Search for books...">
+                <button id="search-button"><i class="fas fa-search"></i></button>
+            </div>
+        </div>
+    </header>
+    
+    <main>
+        <div id="search-results" class="hidden">
+            <div class="search-results-header">
+                <h2>Search Results</h2>
+                <button id="close-search" class="button secondary">Close Search</button>
+            </div>
+            <div class="results-container"></div>
+        </div>
+        
+        <div class="shelves-container">
+            <section class="shelf" id="want-to-read">
+                <div class="shelf-header">
+                    <h2>Want to Read</h2>
+                </div>
+                <div class="books-container" data-status="Want to Read"></div>
+            </section>
+            
+            <section class="shelf" id="currently-reading">
+                <div class="shelf-header">
+                    <h2>Currently Reading</h2>
+                </div>
+                <div class="books-container" data-status="Currently Reading"></div>
+            </section>
+            
+            <section class="shelf" id="read">
+                <div class="shelf-header">
+                    <h2>Read</h2>
+                </div>
+                <div class="books-container" data-status="Read"></div>
+            </section>
+        </div>
+        
+        <div id="book-details" class="hidden">
+            <button id="close-details" class="close-button">×</button>
+            <div class="book-details-content">
+                <div class="book-cover">
+                    <img id="detail-cover" src="" alt="Book cover">
+                </div>
+                <div class="book-info">
+                    <h3 id="detail-title"></h3>
+                    <p id="detail-author"></p>
+                    <p id="detail-openlibrary-link" class="openlibrary-link"><a href="#" target="_blank">View on OpenLibrary <i class="fas fa-external-link-alt"></i></a></p>
+                    <div class="rating-container">
+                        <p>Your Rating: <span id="rating-value">None</span></p>
+                        <div class="stars">
+                            <i class="far fa-star" data-rating="1"></i>
+                            <i class="far fa-star" data-rating="2"></i>
+                            <i class="far fa-star" data-rating="3"></i>
+                            <i class="far fa-star" data-rating="4"></i>
+                            <i class="far fa-star" data-rating="5"></i>
+                            <i class="far fa-star" data-rating="6"></i>
+                            <i class="far fa-star" data-rating="7"></i>
+                            <i class="far fa-star" data-rating="8"></i>
+                            <i class="far fa-star" data-rating="9"></i>
+                            <i class="far fa-star" data-rating="10"></i>
+                        </div>
+                    </div>
+                    <div class="type-container">
+                        <p>Book Type:</p>
+                        <div class="type-options">
+                            <label>
+                                <input type="radio" name="book-type" id="type-book" value="book" checked>
+                                <span class="type-label">Book</span>
+                            </label>
+                            <label>
+                                <input type="radio" name="book-type" id="type-audiobook" value="audiobook">
+                                <span class="type-label">Audiobook</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="comments-container">
+                        <p>Your Comments:</p>
+                        <textarea id="book-comments" placeholder="Add your comments..."></textarea>
+                    </div>
+                    <div class="series-container">
+                        <p>Series Information:</p>
+                        <div class="series-inputs">
+                            <input type="text" id="book-series" placeholder="Series name (e.g., Wheel of Time)">
+                            <input type="number" id="book-series-index" min="1" placeholder="Book # in series">
+                        </div>
+                        <p class="series-format-note">Will display as a separate line below the author name</p>
+                    </div>
+                    <button id="save-details" class="primary-button">Save</button>
+                    <button id="delete-book" class="danger-button">Delete Book</button>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <div id="loading-overlay" class="hidden">
+        <div class="spinner"></div>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
