@@ -1,0 +1,24 @@
+meta {
+  name: post-book-invalid-json
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{base_url}}/books
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "title": "Test Book",
+    "author": "Test Author",
+    "invalid": json
+  }
+}
+
+assert {
+  res.status: eq 400
+  res.body: eq "Invalid request body"
+} 

@@ -1,0 +1,48 @@
+meta {
+  name: post-book-complete
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{base_url}}/books
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "title": "Test Book Complete",
+    "author": "Test Author",
+    "series": "Test Series",
+    "status": "WANT_TO_READ",
+    "rating": 4,
+    "review": "A comprehensive test book with all fields populated",
+    "tags": ["test", "complete", "fiction"],
+    "started_at": "2024-01-01",
+    "finished_at": "2024-01-15"
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.id: isDefined
+  res.body.title: eq "Test Book Complete"
+  res.body.author: eq "Test Author"
+  res.body.series: eq "Test Series"
+  res.body.status: eq "WANT_TO_READ"
+  res.body.rating: eq 4
+  res.body.review: eq "A comprehensive test book with all fields populated"
+  res.body.tags: isArray
+  res.body.tags.length: eq 3
+  res.body.started_at: eq "2024-01-01"
+  res.body.finished_at: eq "2024-01-15"
+}
+
+script:post-response {
+  // Store the created book ID for potential cleanup
+  test("Book ID is a valid UUID format", () => {
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    expect(res.body.id).to.match(uuidRegex);
+  });
+} 

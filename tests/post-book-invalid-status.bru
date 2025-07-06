@@ -1,0 +1,24 @@
+meta {
+  name: post-book-invalid-status
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{base_url}}/books
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "title": "Test Book",
+    "author": "Test Author",
+    "status": "INVALID_STATUS"
+  }
+}
+
+assert {
+  res.status: eq 400
+  res.body: eq "Invalid status. Must be one of: WANT_TO_READ, READING, READ"
+} 

@@ -1,0 +1,23 @@
+meta {
+  name: post-book-missing-author
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{base_url}}/books
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "title": "Test Book",
+    "series": "Test Series"
+  }
+}
+
+assert {
+  res.status: eq 400
+  res.body: eq "Author is required"
+} 
