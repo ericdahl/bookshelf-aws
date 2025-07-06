@@ -1,0 +1,23 @@
+meta {
+  name: put-book-not-found
+  type: http
+  seq: 3
+}
+
+put {
+  url: {{base_url}}/books/99999999-9999-9999-9999-999999999999
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "rating": 5,
+    "status": "READ"
+  }
+}
+
+assert {
+  res.status: eq 404
+  res.body: eq "Book not found"
+} 

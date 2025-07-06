@@ -713,10 +713,45 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Update a book's status (currently not implemented in backend)
     function updateBookStatus(bookId, newStatus) {
-        alert('Update book status is not yet implemented. Please refresh the page to see current data.');
-        // TODO: Implement PUT/PATCH endpoint in backend to update book status
-        // Reload books to reset the UI to the server state
-        loadBooks();
+        // Map frontend status to backend status
+        const statusMapping = {
+            'Want to Read': 'WANT_TO_READ',
+            'Currently Reading': 'READING',
+            'Read': 'READ'
+        };
+        
+        const backendStatus = statusMapping[newStatus] || newStatus;
+        
+        showLoading();
+        
+        fetch(`${API_BASE_URL}/books/${bookId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                status: backendStatus
+            })
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(updatedBook => {
+            // Update the book in the UI
+            updatedBook.status = newStatus; // Use frontend status for UI
+            updateBookCardInShelf(updatedBook);
+            hideLoading();
+        })
+        .catch(error => {
+            console.error('Error updating book status:', error);
+            hideLoading();
+            alert('Failed to update book status. Please try again.');
+            // Reload books to reset the UI to the server state
+            loadBooks();
+        });
     }
 
     // Show book details
@@ -807,15 +842,66 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('rating-value').textContent = ratingText;
     }
 
-    // Save book details (currently not implemented in backend)
+    // Save book details
     function saveBookDetails() {
         if (!currentBook) return;
         
-        alert('Save book details is not yet implemented. Changes will not be saved.');
-        // TODO: Implement PUT/PATCH endpoint in backend to update book details
+        // Get the updated values from the form
+        const updatedBook = {
+            series: document.getElementById('book-series').value || undefined,
+            rating: currentRating || undefined,
+            review: document.getElementById('book-comments').value || undefined
+        };
         
-        // Close the details popup
-        bookDetails.classList.add('hidden');
+        // Only include fields that have values
+        Object.keys(updatedBook).forEach(key => {
+            if (updatedBook[key] === undefined || updatedBook[key] === '') {
+                delete updatedBook[key];
+            }
+        });
+        
+        // If no changes, just close the dialog
+        if (Object.keys(updatedBook).length === 0) {
+            bookDetails.classList.add('hidden');
+            return;
+        }
+        
+        showLoading();
+        
+        fetch(`${API_BASE_URL}/books/${currentBook.id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(updatedBook)
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(updatedBookData => {
+            // Map backend status to frontend status for UI
+            const statusMapping = {
+                'WANT_TO_READ': 'Want to Read',
+                'READING': 'Currently Reading',
+                'READ': 'Read'
+            };
+            updatedBookData.status = statusMapping[updatedBookData.status] || updatedBookData.status;
+            
+            // Update the book in the UI
+            updateBookCardInShelf(updatedBookData);
+            hideLoading();
+            
+            // Close the details popup
+            bookDetails.classList.add('hidden');
+        })
+        .catch(error => {
+            console.error('Error updating book details:', error);
+            hideLoading();
+            alert('Failed to update book details. Please try again.');
+        });
     }
 
     // Delete a book (currently not implemented in backend)

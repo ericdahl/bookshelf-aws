@@ -1,0 +1,23 @@
+meta {
+  name: put-book-invalid-status
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{base_url}}/books/a1b2c3d4-e5f6-7890-1234-567890abcdef
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "status": "INVALID_STATUS",
+    "rating": 5
+  }
+}
+
+assert {
+  res.status: eq 400
+  res.body: eq "Invalid status. Must be one of: WANT_TO_READ, READING, READ"
+} 

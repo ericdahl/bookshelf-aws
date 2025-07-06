@@ -1,0 +1,23 @@
+meta {
+  name: put-book-invalid-json
+  type: http
+  seq: 5
+}
+
+put {
+  url: {{base_url}}/books/a1b2c3d4-e5f6-7890-1234-567890abcdef
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "rating": 5,
+    "invalid": json
+  }
+}
+
+assert {
+  res.status: eq 400
+  res.body: eq "Invalid request body"
+} 
