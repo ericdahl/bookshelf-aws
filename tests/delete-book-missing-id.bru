@@ -1,0 +1,14 @@
+meta {
+  name: delete-book-missing-id
+  type: http
+  seq: 3
+}
+
+delete {
+  url: {{base_url}}/books/
+  auth: inherit
+}
+
+assert {
+  res.status: eq 400
+} 

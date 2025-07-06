@@ -1,0 +1,15 @@
+meta {
+  name: delete-book-not-found
+  type: http
+  seq: 2
+}
+
+delete {
+  url: {{base_url}}/books/11111111-1111-1111-1111-111111111111
+  auth: inherit
+}
+
+assert {
+  res.status: eq 404
+  res.body: eq "Book not found"
+} 

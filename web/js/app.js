@@ -904,15 +904,45 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Delete a book (currently not implemented in backend)
+    // Delete a book
     function deleteBook() {
-        if (!currentBook || !confirm('Delete book functionality is not yet implemented. Do you want to close this dialog?')) return;
+        if (!currentBook || !confirm(`Are you sure you want to delete "${currentBook.title}"? This action cannot be undone.`)) return;
         
-        alert('Delete book is not yet implemented in the backend.');
-        // TODO: Implement DELETE endpoint in backend to delete books
+        showLoading();
         
-        // Close the details popup
-        bookDetails.classList.add('hidden');
+        fetch(`${API_BASE_URL}/books/${currentBook.id}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            // No need to parse JSON for 204 No Content response
+            return response.status;
+        })
+        .then(() => {
+            // Remove the book from the UI
+            const bookCard = document.querySelector(`.book-card[data-id="${currentBook.id}"]`);
+            if (bookCard) {
+                bookCard.remove();
+            }
+            
+            hideLoading();
+            
+            // Close the details popup
+            bookDetails.classList.add('hidden');
+            
+            // Clear current book reference
+            currentBook = null;
+        })
+        .catch(error => {
+            console.error('Error deleting book:', error);
+            hideLoading();
+            alert('Failed to delete book. Please try again.');
+        });
     }
 
     // Show loading overlay

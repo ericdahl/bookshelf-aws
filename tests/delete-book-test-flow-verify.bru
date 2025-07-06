@@ -1,0 +1,15 @@
+meta {
+  name: delete-book-test-flow-verify
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{base_url}}/books/{{created_book_id}}
+  auth: inherit
+}
+
+assert {
+  res.status: eq 404
+  res.body: eq "book not found"
+} 

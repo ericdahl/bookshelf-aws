@@ -1,0 +1,15 @@
+meta {
+  name: delete-book-test-flow-delete
+  type: http
+  seq: 2
+}
+
+delete {
+  url: {{base_url}}/books/{{created_book_id}}
+  auth: inherit
+}
+
+assert {
+  res.status: eq 204
+  res.body: isEmpty
+} 
