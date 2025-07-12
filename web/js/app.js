@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const API_BASE_URL = 'https://o4ayzllpkj.execute-api.us-east-1.amazonaws.com/prod';
     const API = {
         BOOKS: `${API_BASE_URL}/books`,
-        SEARCH: `${API_BASE_URL}/books`, // Use same endpoint with search query
+        SEARCH: `${API_BASE_URL}/search`, // Google Books search endpoint
         BOOK_STATUS: (id) => `${API_BASE_URL}/books/${id}`,
         BOOK_DETAILS: (id) => `${API_BASE_URL}/books/${id}`,
         DELETE_BOOK: (id) => `${API_BASE_URL}/books/${id}`
@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // DOM Elements
     const searchInput = document.getElementById('search-input');
     const searchButton = document.getElementById('search-button');
+    const searchCollectionButton = document.getElementById('search-collection-button');
     const searchResults = document.getElementById('search-results');
     const closeSearch = document.getElementById('close-search');
     const resultsContainer = document.querySelector('.results-container');
@@ -247,10 +248,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // Set up event listeners
     function setupEventListeners() {
         // Search
-        searchButton.addEventListener('click', searchBooks);
+        searchButton.addEventListener('click', searchGoogleBooks);
+        searchCollectionButton.addEventListener('click', searchCollectionBooks);
         searchInput.addEventListener('keypress', e => {
             if (e.key === 'Enter') {
-                searchBooks();
+                searchGoogleBooks();
             }
         });
         
@@ -505,8 +507,53 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Search for books using Google Books API
+    function searchGoogleBooks() {
+        const query = searchInput.value.trim();
+        
+        if (query === '') {
+            return;
+        }
+        
+        showLoading();
+        
+        fetch(`${API.SEARCH}?q=${encodeURIComponent(query)}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to search books');
+                }
+                return response.json();
+            })
+            .then(books => {
+                // Get existing books to check duplicates
+                const existingBooks = getAllExistingBooks();
+                
+                // Check which books already exist in our collection
+                const searchResultsWithStatus = books.map(book => {
+                    const existingBook = existingBooks.find(existing => 
+                        existing.title.toLowerCase() === book.title.toLowerCase() &&
+                        existing.author.toLowerCase() === book.author.toLowerCase()
+                    );
+                    
+                    if (existingBook) {
+                        book.existing_shelf = existingBook.status;
+                    }
+                    
+                    return book;
+                });
+                
+                displaySearchResults(searchResultsWithStatus, `Google Books results for "${query}"`);
+                hideLoading();
+            })
+            .catch(error => {
+                console.error('Error searching books:', error);
+                hideLoading();
+                alert('Failed to search for books. Please try again.');
+            });
+    }
+
     // Search for books in existing collection
-    function searchBooks() {
+    function searchCollectionBooks() {
         const query = searchInput.value.trim();
         
         if (query === '') {
@@ -536,14 +583,69 @@ document.addEventListener('DOMContentLoaded', function() {
             book.author.toLowerCase().includes(query.toLowerCase())
         );
         
-        // Display results
+        displayCollectionSearchResults(filteredBooks, query);
+        hideLoading();
+    }
+
+    // Get all existing books from the shelves
+    function getAllExistingBooks() {
+        const allBooks = [];
+        document.querySelectorAll('.book-card').forEach(card => {
+            const title = card.querySelector('.book-title').textContent;
+            const author = card.querySelector('.book-author').textContent;
+            const id = card.dataset.id;
+            
+            // Get the shelf/status
+            const shelf = card.closest('.books-container');
+            const status = shelf ? shelf.dataset.status : '';
+            
+            allBooks.push({
+                id: id,
+                title: title,
+                author: author,
+                status: status
+            });
+        });
+        return allBooks;
+    }
+
+    // Display search results from Google Books API
+    function displaySearchResults(books, headerText) {
         resultsContainer.innerHTML = '';
         
-        if (filteredBooks.length === 0) {
+        if (books.length === 0) {
             resultsContainer.innerHTML = '<p>No books found. Try a different search term.</p>';
         } else {
             // Show number of results
-            resultsContainer.innerHTML = `<p class="search-count">${filteredBooks.length} books found for "${query}"</p>`;
+            resultsContainer.innerHTML = `<p class="search-count">${books.length} ${headerText}</p>`;
+            
+            // Create a container for the book cards
+            const booksGrid = document.createElement('div');
+            booksGrid.className = 'search-results-grid';
+            
+            // Add each book to the grid
+            books.forEach(book => {
+                const bookCard = createSearchResultCard(book);
+                booksGrid.appendChild(bookCard);
+            });
+            
+            resultsContainer.appendChild(booksGrid);
+        }
+        
+        // Automatically scroll to the search results
+        searchResults.classList.remove('hidden');
+        searchResults.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Display search results from collection
+    function displayCollectionSearchResults(filteredBooks, query) {
+        resultsContainer.innerHTML = '';
+        
+        if (filteredBooks.length === 0) {
+            resultsContainer.innerHTML = '<p>No books found in your collection. Try a different search term.</p>';
+        } else {
+            // Show number of results
+            resultsContainer.innerHTML = `<p class="search-count">${filteredBooks.length} books found in your collection for "${query}"</p>`;
             
             // Create a container for the book cards
             const booksGrid = document.createElement('div');
@@ -562,7 +664,6 @@ document.addEventListener('DOMContentLoaded', function() {
         // Automatically scroll to the search results
         searchResults.classList.remove('hidden');
         searchResults.scrollIntoView({ behavior: 'smooth' });
-        hideLoading();
     }
 
     // Add a book to the appropriate shelf
@@ -625,13 +726,13 @@ document.addEventListener('DOMContentLoaded', function() {
         const card = document.createElement('div');
         card.className = 'book-card search-result';
         
-        const coverUrl = book.cover_url || 'https://via.placeholder.com/150x200?text=No+Cover';
+        const coverUrl = book.thumbnail || 'https://via.placeholder.com/150x200?text=No+Cover';
         
         // Set button text based on whether book is already in a shelf
-        let buttonText = "Add to Shelf";
+        let buttonText = "Add to Want to Read";
         let buttonClass = "add-book";
         if (book.existing_shelf) {
-            buttonText = `Shelf: ${book.existing_shelf}`;
+            buttonText = `In ${book.existing_shelf}`;
             buttonClass = "add-book book-exists";
         }
 
@@ -650,15 +751,15 @@ document.addEventListener('DOMContentLoaded', function() {
         const addButton = card.querySelector('.add-book');
         if (!book.existing_shelf) {
             addButton.addEventListener('click', () => {
-                addBook(book, addButton);
+                addGoogleBook(book, addButton);
             });
         }
         
         return card;
     }
 
-    // Add a new book to the shelf
-    function addBook(book, buttonElement) {
+    // Add a new book from Google Books search to the shelf
+    function addGoogleBook(book, buttonElement) {
         // If book already exists in a shelf, just show a notification
         if (book.existing_shelf) {
             alert(`This book is already in your "${book.existing_shelf}" shelf`);
@@ -670,11 +771,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const newBook = {
             title: book.title,
             author: book.author,
-            series: book.series || '',
-            status: 'WANT_TO_READ', // Use backend status format
-            rating: book.rating || null,
-            review: book.review || '',
-            tags: book.tags || []
+            status: 'WANT_TO_READ' // Use backend status format
         };
         
         fetch(API.BOOKS, {
@@ -691,6 +788,14 @@ document.addEventListener('DOMContentLoaded', function() {
             return response.json();
         })
         .then(addedBook => {
+            // Map the status to frontend format for display
+            const statusMapping = {
+                'WANT_TO_READ': 'Want to Read',
+                'READING': 'Currently Reading',
+                'read': 'Read'
+            };
+            addedBook.status = statusMapping[addedBook.status] || addedBook.status;
+            
             // Add the book to the shelf
             addBookToShelf(addedBook);
             
