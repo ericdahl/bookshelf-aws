@@ -32,6 +32,7 @@ type BookUpdateRequest struct {
 	Tags       []string `json:"tags,omitempty"`
 	StartedAt  *string  `json:"started_at,omitempty"`
 	FinishedAt *string  `json:"finished_at,omitempty"`
+	Thumbnail  *string  `json:"thumbnail,omitempty"`
 }
 
 // Book represents a book record for DynamoDB.
@@ -48,6 +49,7 @@ type Book struct {
 	Tags       []string `dynamodbav:"tags,omitempty"`
 	StartedAt  string   `dynamodbav:"started_at,omitempty"`
 	FinishedAt string   `dynamodbav:"finished_at,omitempty"`
+	Thumbnail  string   `dynamodbav:"thumbnail,omitempty"`
 }
 
 // APIBook is the structure for the API response.
@@ -62,6 +64,7 @@ type APIBook struct {
 	Tags       []string `json:"tags,omitempty"`
 	StartedAt  string   `json:"started_at,omitempty"`
 	FinishedAt string   `json:"finished_at,omitempty"`
+	Thumbnail  string   `json:"thumbnail,omitempty"`
 }
 
 func init() {
@@ -174,6 +177,9 @@ func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 	if updateRequest.FinishedAt != nil {
 		updatedBook.FinishedAt = *updateRequest.FinishedAt
 	}
+	if updateRequest.Thumbnail != nil {
+		updatedBook.Thumbnail = *updateRequest.Thumbnail
+	}
 
 	// Marshal the updated book to DynamoDB attributes
 	item, err := attributevalue.MarshalMap(updatedBook)
@@ -212,6 +218,7 @@ func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 		Tags:       updatedBook.Tags,
 		StartedAt:  updatedBook.StartedAt,
 		FinishedAt: updatedBook.FinishedAt,
+		Thumbnail:  updatedBook.Thumbnail,
 	}
 
 	body, err := json.Marshal(apiBook)

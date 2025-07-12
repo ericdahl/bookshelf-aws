@@ -686,7 +686,7 @@ document.addEventListener('DOMContentLoaded', function() {
         card.className = 'book-card';
         card.dataset.id = book.id;
         
-        const coverUrl = book.cover_url || 'https://via.placeholder.com/150x200?text=No+Cover';
+        const coverUrl = book.thumbnail || book.cover_url || 'https://via.placeholder.com/150x200?text=No+Cover';
         const ratingHtml = book.rating ? `<p class="book-rating">Rating: ${book.rating}/10</p>` : '';
         
         // Prepare series info display if available
@@ -771,7 +771,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const newBook = {
             title: book.title,
             author: book.author,
-            status: 'WANT_TO_READ' // Use backend status format
+            status: 'WANT_TO_READ', // Use backend status format
+            thumbnail: book.thumbnail || ''
         };
         
         fetch(API.BOOKS, {
@@ -866,7 +867,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Update the UI with book details
         document.getElementById('detail-title').textContent = book.title;
         document.getElementById('detail-author').textContent = book.author;
-        document.getElementById('detail-cover').src = book.cover_url || 'https://via.placeholder.com/150x200?text=No+Cover';
+        document.getElementById('detail-cover').src = book.thumbnail || book.cover_url || 'https://via.placeholder.com/150x200?text=No+Cover';
         
         // Update OpenLibrary link
         const openLibraryLink = document.getElementById('detail-openlibrary-link').querySelector('a');

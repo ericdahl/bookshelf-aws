@@ -4,13 +4,14 @@ resource "aws_dynamodb_table_item" "the_way_of_kings" {
   range_key  = aws_dynamodb_table.books.range_key
 
   item = jsonencode({
-    PK     = { "S" = "BOOK#a1b2c3d4-e5f6-7890-1234-567890abcdef" }
-    SK     = { "S" = "BOOK" }
-    id     = { "S" = "a1b2c3d4-e5f6-7890-1234-567890abcdef" }
-    Title  = { "S" = "The Way of Kings" }
-    Author = { "S" = "Brandon Sanderson" }
-    Series = { "S" = "The Stormlight Archive" }
-    status = { "S" = "READ" }
+    PK        = { "S" = "BOOK#a1b2c3d4-e5f6-7890-1234-567890abcdef" }
+    SK        = { "S" = "BOOK" }
+    id        = { "S" = "a1b2c3d4-e5f6-7890-1234-567890abcdef" }
+    Title     = { "S" = "The Way of Kings" }
+    Author    = { "S" = "Brandon Sanderson" }
+    Series    = { "S" = "The Stormlight Archive" }
+    status    = { "S" = "READ" }
+    thumbnail = { "S" = "https://books.google.com/books/content?id=X_x_AAAAQBAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api" }
   })
 }
 
@@ -84,13 +85,14 @@ resource "aws_dynamodb_table_item" "the_eye_of_the_world" {
   range_key  = aws_dynamodb_table.books.range_key
 
   item = jsonencode({
-    PK     = { "S" = "BOOK#f6a7b8c9-d0e1-2345-6789-0abcdef12345" }
-    SK     = { "S" = "BOOK" }
-    id     = { "S" = "f6a7b8c9-d0e1-2345-6789-0abcdef12345" }
-    Title  = { "S" = "The Eye of the World" }
-    Author = { "S" = "Robert Jordan" }
-    Series = { "S" = "The Wheel of Time" }
-    status = { "S" = "WANT_TO_READ" }
+    PK        = { "S" = "BOOK#f6a7b8c9-d0e1-2345-6789-0abcdef12345" }
+    SK        = { "S" = "BOOK" }
+    id        = { "S" = "f6a7b8c9-d0e1-2345-6789-0abcdef12345" }
+    Title     = { "S" = "The Eye of the World" }
+    Author    = { "S" = "Robert Jordan" }
+    Series    = { "S" = "The Wheel of Time" }
+    status    = { "S" = "WANT_TO_READ" }
+    thumbnail = { "S" = "https://books.google.com/books/content?id=PmJuDwAAQBAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api" }
   })
 }
 

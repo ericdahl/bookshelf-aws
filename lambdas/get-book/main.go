@@ -15,11 +15,12 @@ import (
 )
 
 type Book struct {
-	ID     string `json:"id"`
-	Title  string `json:"title"`
-	Author string `json:"author"`
-	Series string `json:"series"`
-	Status string `json:"status"`
+	ID        string `json:"id"`
+	Title     string `json:"title"`
+	Author    string `json:"author"`
+	Series    string `json:"series"`
+	Status    string `json:"status"`
+	Thumbnail string `json:"thumbnail,omitempty"`
 }
 
 func HandleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
@@ -60,6 +61,13 @@ func HandleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (
 		Author: result.Item["Author"].(*types.AttributeValueMemberS).Value,
 		Series: result.Item["Series"].(*types.AttributeValueMemberS).Value,
 		Status: result.Item["status"].(*types.AttributeValueMemberS).Value,
+	}
+	
+	// Handle optional thumbnail field
+	if thumbnailAttr, exists := result.Item["thumbnail"]; exists {
+		if thumbnailValue, ok := thumbnailAttr.(*types.AttributeValueMemberS); ok {
+			book.Thumbnail = thumbnailValue.Value
+		}
 	}
 
 	body, err := json.Marshal(book)

@@ -24,22 +24,24 @@ var ddbClient *dynamodb.Client
 
 // Book represents a book record from DynamoDB.
 type Book struct {
-	ID     string `dynamodbav:"id"`
-	PK     string `dynamodbav:"PK"`
-	SK     string `dynamodbav:"SK"`
-	Title  string `dynamodbav:"Title"`
-	Author string `dynamodbav:"Author"`
-	Series string `dynamodbav:"Series"`
-	Status string `dynamodbav:"status"`
+	ID        string `dynamodbav:"id"`
+	PK        string `dynamodbav:"PK"`
+	SK        string `dynamodbav:"SK"`
+	Title     string `dynamodbav:"Title"`
+	Author    string `dynamodbav:"Author"`
+	Series    string `dynamodbav:"Series"`
+	Status    string `dynamodbav:"status"`
+	Thumbnail string `dynamodbav:"thumbnail"`
 }
 
 // APIBook is the structure for the API response.
 type APIBook struct {
-	ID     string `json:"id"`
-	Title  string `json:"title"`
-	Author string `json:"author"`
-	Series string `json:"series"`
-	Status string `json:"status"`
+	ID        string `json:"id"`
+	Title     string `json:"title"`
+	Author    string `json:"author"`
+	Series    string `json:"series"`
+	Status    string `json:"status"`
+	Thumbnail string `json:"thumbnail,omitempty"`
 }
 
 func init() {
@@ -119,11 +121,12 @@ func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 	apiBooks := make([]APIBook, len(books))
 	for i, book := range books {
 		apiBooks[i] = APIBook{
-			ID:     book.ID,
-			Title:  book.Title,
-			Author: book.Author,
-			Series: book.Series,
-			Status: book.Status,
+			ID:        book.ID,
+			Title:     book.Title,
+			Author:    book.Author,
+			Series:    book.Series,
+			Status:    book.Status,
+			Thumbnail: book.Thumbnail,
 		}
 	}
 
