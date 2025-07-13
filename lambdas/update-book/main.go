@@ -64,7 +64,7 @@ type APIBook struct {
 	Tags       []string `json:"tags,omitempty"`
 	StartedAt  string   `json:"started_at,omitempty"`
 	FinishedAt string   `json:"finished_at,omitempty"`
-	Thumbnail  string   `json:"thumbnail,omitempty"`
+	Thumbnail  string   `json:"thumbnail"`
 }
 
 func init() {

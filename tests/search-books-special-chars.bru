@@ -1,0 +1,39 @@
+meta {
+  name: search-books-special-chars
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{base_url}}/search?q=lord+of+the+rings
+  body: none
+  auth: inherit
+}
+
+assert {
+  res.status: eq 200
+  res.body: isArray
+}
+
+script:post-response {
+  test("Search handles URL encoded queries correctly", () => {
+    expect(res.body).to.be.an('array');
+    
+    if (res.body.length > 0) {
+      const firstBook = res.body[0];
+      expect(firstBook).to.have.property('title');
+      expect(firstBook).to.have.property('author');
+    }
+  });
+
+  test("Special characters in search work correctly", () => {
+    // Search for "lord of the rings" should return relevant results
+    const hasRelevantResults = res.body.length === 0 || 
+      res.body.some(book => 
+        book.title.toLowerCase().includes('lord') ||
+        book.title.toLowerCase().includes('ring') ||
+        book.author.toLowerCase().includes('tolkien')
+      );
+    expect(hasRelevantResults).to.be.true;
+  });
+}

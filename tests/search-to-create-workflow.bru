@@ -1,0 +1,56 @@
+meta {
+  name: search-to-create-workflow
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{base_url}}/search?q=dune
+  body: none
+  auth: inherit
+}
+
+assert {
+  res.status: eq 200
+  res.body: isArray
+  res.body.length: gt 0
+}
+
+script:post-response {
+  test("Search returns books with required fields for creation", () => {
+    expect(res.body).to.be.an('array');
+    expect(res.body.length).to.be.greaterThan(0);
+    
+    const firstBook = res.body[0];
+    expect(firstBook).to.have.property('title');
+    expect(firstBook).to.have.property('author');
+    expect(firstBook.title).to.be.a('string').that.is.not.empty;
+    expect(firstBook.author).to.be.a('string').that.is.not.empty;
+  });
+
+  test("Search results include thumbnail for creating books", () => {
+    const booksWithThumbnails = res.body.filter(book => 
+      book.thumbnail && book.thumbnail !== ""
+    );
+    
+    expect(booksWithThumbnails.length).to.be.greaterThan(0);
+    
+    // Store first book with thumbnail for potential creation test
+    if (booksWithThumbnails.length > 0) {
+      const bookToCreate = booksWithThumbnails[0];
+      bru.setVar("search_book_title", bookToCreate.title);
+      bru.setVar("search_book_author", bookToCreate.author);
+      bru.setVar("search_book_thumbnail", bookToCreate.thumbnail);
+    }
+  });
+
+  test("Thumbnail URLs are valid Google Books format", () => {
+    const booksWithThumbnails = res.body.filter(book => book.thumbnail);
+    
+    booksWithThumbnails.forEach(book => {
+      expect(book.thumbnail).to.match(/^https?:\/\/books\.google\.com/);
+      expect(book.thumbnail).to.include('printsec=frontcover');
+    });
+  });
+
+}

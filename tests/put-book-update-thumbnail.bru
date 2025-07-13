@@ -1,0 +1,35 @@
+meta {
+  name: put-book-update-thumbnail
+  type: http
+  seq: 1
+}
+
+put {
+  url: {{base_url}}/books/c3d4e5f6-a7b8-9012-3456-7890abcdef12
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "thumbnail": "https://books.google.com/books/content?id=updatedId&printsec=frontcover&img=1&zoom=1&source=gbs_api"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.id: eq "c3d4e5f6-a7b8-9012-3456-7890abcdef12"
+  res.body.thumbnail: eq "https://books.google.com/books/content?id=updatedId&printsec=frontcover&img=1&zoom=1&source=gbs_api"
+}
+
+script:post-response {
+  test("Thumbnail update successful", () => {
+    expect(res.body.thumbnail).to.equal("https://books.google.com/books/content?id=updatedId&printsec=frontcover&img=1&zoom=1&source=gbs_api");
+  });
+
+  test("Other fields remain unchanged", () => {
+    expect(res.body.title).to.equal("Oathbringer");
+    expect(res.body.author).to.equal("Brandon Sanderson");
+    expect(res.body.series).to.equal("The Stormlight Archive");
+  });
+}

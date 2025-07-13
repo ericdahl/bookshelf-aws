@@ -1,0 +1,35 @@
+meta {
+  name: put-book-remove-thumbnail
+  type: http
+  seq: 1
+}
+
+put {
+  url: {{base_url}}/books/f6a7b8c9-d0e1-2345-6789-0abcdef12345
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "thumbnail": ""
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.id: eq "f6a7b8c9-d0e1-2345-6789-0abcdef12345"
+}
+
+script:post-response {
+  test("Thumbnail removal successful", () => {
+    const thumbnail = res.body.thumbnail;
+    expect(thumbnail === "" || thumbnail === null || thumbnail === undefined).to.be.true;
+  });
+
+  test("Other fields remain unchanged", () => {
+    expect(res.body.title).to.equal("The Eye of the World");
+    expect(res.body.author).to.equal("Robert Jordan");
+    expect(res.body.series).to.equal("The Wheel of Time");
+  });
+}

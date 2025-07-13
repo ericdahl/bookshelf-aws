@@ -1,0 +1,51 @@
+meta {
+  name: get-books-thumbnail-field
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{base_url}}/books
+  body: none
+  auth: inherit
+}
+
+assert {
+  res.status: eq 200
+  res.body: isArray
+}
+
+script:post-response {
+  test("Books list includes thumbnail field", () => {
+    expect(res.body).to.be.an('array');
+    
+    if (res.body.length > 0) {
+      res.body.forEach(book => {
+        expect(book).to.have.property('title');
+        expect(book).to.have.property('author');
+        // thumbnail should be present as a property (can be null/empty)
+        expect(book.hasOwnProperty('thumbnail')).to.be.true;
+      });
+    }
+  });
+
+  test("Books with thumbnails have valid URLs", () => {
+    const booksWithThumbnails = res.body.filter(book => 
+      book.thumbnail && book.thumbnail !== ""
+    );
+    
+    booksWithThumbnails.forEach(book => {
+      expect(book.thumbnail).to.be.a('string');
+      expect(book.thumbnail).to.match(/^https?:\/\/.+/);
+    });
+  });
+
+  test("Find seeded books with thumbnails", () => {
+    const wayOfKings = res.body.find(b => b.title === "The Way of Kings");
+    
+    if (wayOfKings) {
+      expect(wayOfKings.thumbnail).to.be.a('string');
+      expect(wayOfKings.thumbnail).to.include('books.google.com');
+    }
+  });
+}

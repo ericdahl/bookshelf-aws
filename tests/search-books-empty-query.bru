@@ -1,0 +1,21 @@
+meta {
+  name: search-books-empty-query
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{base_url}}/search?q=
+  body: none
+  auth: inherit
+}
+
+assert {
+  res.status: eq 400
+}
+
+script:post-response {
+  test("Empty query returns appropriate error", () => {
+    expect(res.status).to.equal(400);
+  });
+}

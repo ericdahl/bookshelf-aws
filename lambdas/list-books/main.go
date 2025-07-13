@@ -41,7 +41,7 @@ type APIBook struct {
 	Author    string `json:"author"`
 	Series    string `json:"series"`
 	Status    string `json:"status"`
-	Thumbnail string `json:"thumbnail,omitempty"`
+	Thumbnail string `json:"thumbnail"`
 }
 
 func init() {

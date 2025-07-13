@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     // API endpoints
-    const API_BASE_URL = 'https://o4ayzllpkj.execute-api.us-east-1.amazonaws.com/prod';
+    const API_BASE_URL = 'https://465th5tzbg.execute-api.us-east-1.amazonaws.com/prod';
     const API = {
         BOOKS: `${API_BASE_URL}/books`,
         SEARCH: `${API_BASE_URL}/search`, // Google Books search endpoint

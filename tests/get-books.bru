@@ -18,4 +18,17 @@ script:post-response {
     expect(book.author).to.equal("Brandon Sanderson");
     expect(book.series).to.equal("The Stormlight Archive");
   });
+
+  test("Books include thumbnail field", () => {
+    res.body.forEach(book => {
+      expect(book.hasOwnProperty('thumbnail')).to.be.true;
+    });
+  });
+
+  test("Way of Kings has thumbnail", () => {
+    if (book) {
+      expect(book.thumbnail).to.be.a('string');
+      expect(book.thumbnail).to.include('books.google.com');
+    }
+  });
 }

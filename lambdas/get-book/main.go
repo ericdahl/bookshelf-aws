@@ -20,7 +20,7 @@ type Book struct {
 	Author    string `json:"author"`
 	Series    string `json:"series"`
 	Status    string `json:"status"`
-	Thumbnail string `json:"thumbnail,omitempty"`
+	Thumbnail string `json:"thumbnail"`
 }
 
 func HandleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {

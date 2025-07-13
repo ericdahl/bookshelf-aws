@@ -1,0 +1,21 @@
+meta {
+  name: search-books-missing-query
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{base_url}}/search
+  body: none
+  auth: inherit
+}
+
+assert {
+  res.status: eq 400
+}
+
+script:post-response {
+  test("Missing query parameter returns 400", () => {
+    expect(res.status).to.equal(400);
+  });
+}

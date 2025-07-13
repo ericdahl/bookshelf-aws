@@ -1,0 +1,33 @@
+meta {
+  name: get-book-with-thumbnail
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{base_url}}/books/a1b2c3d4-e5f6-7890-1234-567890abcdef
+  body: none
+  auth: inherit
+}
+
+assert {
+  res.status: eq 200
+  res.body.id: eq "a1b2c3d4-e5f6-7890-1234-567890abcdef"
+  res.body.title: eq "The Way of Kings"
+  res.body.author: eq "Brandon Sanderson"
+}
+
+script:post-response {
+  test("Get book returns thumbnail field", () => {
+    expect(res.body).to.have.property('thumbnail');
+    expect(res.body.thumbnail).to.be.a('string');
+    expect(res.body.thumbnail).to.include('books.google.com');
+  });
+
+  test("Thumbnail URL is properly formatted", () => {
+    const thumbnail = res.body.thumbnail;
+    expect(thumbnail).to.match(/^https?:\/\/.+/);
+    expect(thumbnail).to.include('printsec=frontcover');
+    expect(thumbnail).to.include('source=gbs_api');
+  });
+}

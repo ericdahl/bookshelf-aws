@@ -5,15 +5,15 @@ meta {
 }
 
 get {
-  url: {{base_url}}/books/b2c3d4e5-f6a7-8901-2345-67890abcdef1
+  url: {{base_url}}/books/c3d4e5f6-a7b8-9012-3456-7890abcdef12
   body: none
   auth: inherit
 }
 
 assert {
   res.status: eq 200
-  res.body.id: eq "b2c3d4e5-f6a7-8901-2345-67890abcdef1"
-  res.body.title: eq "Words of Radiance"
+  res.body.id: eq "c3d4e5f6-a7b8-9012-3456-7890abcdef12"
+  res.body.title: eq "Oathbringer"
   res.body.author: eq "Brandon Sanderson"
   res.body.series: eq "The Stormlight Archive"
   res.body.status: eq "WANT_TO_READ"

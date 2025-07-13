@@ -1,0 +1,49 @@
+meta {
+  name: search-books-valid-query
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{base_url}}/search?q=hobbit
+  body: none
+  auth: inherit
+}
+
+assert {
+  res.status: eq 200
+  res.body: isArray
+  res.body.length: gt 0
+}
+
+script:post-response {
+  test("Search returns valid book structure", () => {
+    expect(res.body).to.be.an('array');
+    expect(res.body.length).to.be.greaterThan(0);
+    
+    const firstBook = res.body[0];
+    expect(firstBook).to.have.property('id');
+    expect(firstBook).to.have.property('title');
+    expect(firstBook).to.have.property('author');
+    expect(firstBook.id).to.be.a('string');
+    expect(firstBook.title).to.be.a('string');
+    expect(firstBook.author).to.be.a('string');
+  });
+
+  test("Search results contain hobbit-related books", () => {
+    const hasHobbitBook = res.body.some(book => 
+      book.title.toLowerCase().includes('hobbit')
+    );
+    expect(hasHobbitBook).to.be.true;
+  });
+
+  test("Books include thumbnail when available", () => {
+    const booksWithThumbnails = res.body.filter(book => book.thumbnail);
+    expect(booksWithThumbnails.length).to.be.greaterThan(0);
+    
+    booksWithThumbnails.forEach(book => {
+      expect(book.thumbnail).to.be.a('string');
+      expect(book.thumbnail).to.match(/^https?:\/\/.+/);
+    });
+  });
+}
