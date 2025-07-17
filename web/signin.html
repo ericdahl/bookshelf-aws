@@ -196,8 +196,10 @@
                 const result = await signInUser(email, password);
                 showSuccess('Sign in successful! Redirecting...');
                 
-                // Store authentication info
-                localStorage.setItem('isAuthenticated', 'true');
+                // Store JWT tokens
+                localStorage.setItem('accessToken', result.getAccessToken().getJwtToken());
+                localStorage.setItem('idToken', result.getIdToken().getJwtToken());
+                localStorage.setItem('refreshToken', result.getRefreshToken().getToken());
                 localStorage.setItem('userEmail', email);
                 
                 // Redirect to main app

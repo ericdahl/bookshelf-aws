@@ -85,7 +85,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Load all books from the server
     function loadBooks() {
         showLoading();
-        fetch(API.BOOKS)
+        fetch(API.BOOKS, {
+            headers: getAuthHeaders()
+        })
             .then(response => response.json())
             .then(books => {
                 // Clear existing books from shelves
@@ -523,7 +525,9 @@ document.addEventListener('DOMContentLoaded', function() {
         
         showLoading();
         
-        fetch(`${API.SEARCH}?q=${encodeURIComponent(query)}`)
+        fetch(`${API.SEARCH}?q=${encodeURIComponent(query)}`, {
+            headers: getAuthHeaders()
+        })
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Failed to search books');
@@ -783,9 +787,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         fetch(API.BOOKS, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
+            headers: getAuthHeaders(),
             body: JSON.stringify(newBook)
         })
         .then(response => {
@@ -838,9 +840,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         fetch(`${API_BASE_URL}/books/${bookId}`, {
             method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: getAuthHeaders(),
             body: JSON.stringify({
                 status: backendStatus
             })
@@ -982,9 +982,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         fetch(`${API_BASE_URL}/books/${currentBook.id}`, {
             method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: getAuthHeaders(),
             body: JSON.stringify(updatedBook)
         })
         .then(response => {
@@ -1024,9 +1022,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         fetch(`${API_BASE_URL}/books/${currentBook.id}`, {
             method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json',
-            }
+            headers: getAuthHeaders()
         })
         .then(response => {
             if (!response.ok) {
@@ -1184,17 +1180,122 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Authentication functions
     function checkAuthentication() {
-        // Simple localStorage check - in production, you'd want to validate JWT tokens
-        return localStorage.getItem('isAuthenticated') === 'true';
+        const accessToken = localStorage.getItem('accessToken');
+        const refreshToken = localStorage.getItem('refreshToken');
+        
+        if (!accessToken || !refreshToken) {
+            return false;
+        }
+        
+        // Check if access token is expired
+        try {
+            const tokenPayload = JSON.parse(atob(accessToken.split('.')[1]));
+            const currentTime = Math.floor(Date.now() / 1000);
+            
+            if (tokenPayload.exp < currentTime) {
+                // Token is expired, try to refresh
+                return refreshAccessToken();
+            }
+            
+            return true;
+        } catch (error) {
+            console.error('Error validating token:', error);
+            clearAuthTokens();
+            return false;
+        }
+    }
+
+    async function refreshAccessToken() {
+        const refreshToken = localStorage.getItem('refreshToken');
+        
+        if (!refreshToken) {
+            return false;
+        }
+        
+        try {
+            // Initialize Cognito SDK if not already done
+            const poolData = {
+                UserPoolId: 'us-east-1_yqnoWMmU6',
+                ClientId: '4645dqoa4ng95qqn9kkeearsil'
+            };
+            
+            const userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
+            const cognitoUser = userPool.getCurrentUser();
+            
+            if (!cognitoUser) {
+                clearAuthTokens();
+                return false;
+            }
+            
+            return new Promise((resolve) => {
+                cognitoUser.getSession((err, session) => {
+                    if (err) {
+                        console.error('Error refreshing token:', err);
+                        clearAuthTokens();
+                        resolve(false);
+                        return;
+                    }
+                    
+                    if (session.isValid()) {
+                        // Update stored tokens
+                        localStorage.setItem('accessToken', session.getAccessToken().getJwtToken());
+                        localStorage.setItem('idToken', session.getIdToken().getJwtToken());
+                        localStorage.setItem('refreshToken', session.getRefreshToken().getToken());
+                        resolve(true);
+                    } else {
+                        clearAuthTokens();
+                        resolve(false);
+                    }
+                });
+            });
+        } catch (error) {
+            console.error('Error refreshing token:', error);
+            clearAuthTokens();
+            return false;
+        }
+    }
+
+    function clearAuthTokens() {
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('idToken');
+        localStorage.removeItem('refreshToken');
+        localStorage.removeItem('userEmail');
     }
 
     function signOut() {
         // Clear authentication state
-        localStorage.removeItem('isAuthenticated');
-        localStorage.removeItem('userEmail');
+        clearAuthTokens();
+        
+        // Sign out from Cognito
+        try {
+            const poolData = {
+                UserPoolId: 'us-east-1_yqnoWMmU6',
+                ClientId: '4645dqoa4ng95qqn9kkeearsil'
+            };
+            
+            const userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
+            const cognitoUser = userPool.getCurrentUser();
+            
+            if (cognitoUser) {
+                cognitoUser.signOut();
+            }
+        } catch (error) {
+            console.error('Error signing out:', error);
+        }
         
         // Redirect to signin page
         window.location.href = 'signin.html';
+    }
+
+    // Function to get authorization headers for API requests
+    function getAuthHeaders() {
+        const accessToken = localStorage.getItem('accessToken');
+        return accessToken ? {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json'
+        } : {
+            'Content-Type': 'application/json'
+        };
     }
 
     // Make signOut function available globally
