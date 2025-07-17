@@ -4,18 +4,13 @@ locals {
   delete_book_source_hash       = sha1(join("", [for f in local.delete_book_go_files_for_hash : filesha1("${local.delete_book_lambda_source_dir}/${f}")]))
 }
 
-data "external" "build_delete_book_lambda" {
-  program = ["bash", "-c", <<EOT
-set -e
-SOURCE_DIR="${local.delete_book_lambda_source_dir}"
-cd "$SOURCE_DIR"
-make zip >&2
-jq -n --arg filename "$SOURCE_DIR/dist/delete-book.zip" '{"filename": $filename}'
-EOT
-  ]
-
-  query = {
+resource "null_resource" "build_delete_book_lambda" {
+  triggers = {
     source_hash = local.delete_book_source_hash
+  }
+
+  provisioner "local-exec" {
+    command = "cd ${local.delete_book_lambda_source_dir} && make zip"
   }
 }
 
@@ -66,12 +61,13 @@ resource "aws_lambda_function" "delete_book_lambda" {
   handler       = "bootstrap"
   runtime       = "provided.al2"
 
-  filename         = data.external.build_delete_book_lambda.result.filename
-  source_code_hash = filebase64sha256(data.external.build_delete_book_lambda.result.filename)
+  filename         = "${local.delete_book_lambda_source_dir}/dist/delete-book.zip"
+  source_code_hash = local.delete_book_source_hash
 
   depends_on = [
     aws_iam_role_policy_attachment.delete_book_lambda_basic_execution,
     aws_iam_role_policy_attachment.delete_book_lambda_dynamodb_delete,
+    null_resource.build_delete_book_lambda,
   ]
 }
 

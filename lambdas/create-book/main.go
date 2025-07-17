@@ -18,7 +18,6 @@ import (
 
 const tableName = "books"
 
-// ddbClient is the DynamoDB client.
 var ddbClient *dynamodb.Client
 
 // BookRequest represents the request payload for creating a book.

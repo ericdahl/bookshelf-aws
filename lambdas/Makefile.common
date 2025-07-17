@@ -22,7 +22,7 @@ zip:
 	@mkdir -p bin dist
 	@echo "Building for Lambda and creating zip archive..."
 	GOOS=linux GOARCH=amd64 go build -o bin/bootstrap main.go
-	cd bin && zip ../dist/$(TARGET_NAME).zip bootstrap > /dev/null
+	cd bin && zip -X ../dist/$(TARGET_NAME).zip bootstrap > /dev/null
 	@echo "Successfully created dist/$(TARGET_NAME).zip"
 
 check: fmt vet

@@ -4,19 +4,13 @@ locals {
   source_hash       = sha1(join("", [for f in local.go_files_for_hash : filesha1("${local.lambda_source_dir}/${f}")]))
 }
 
-data "external" "build_list_books_lambda" {
-  program = ["bash", "-c", <<EOT
-set -e
-SOURCE_DIR="${local.lambda_source_dir}"
-cd "$SOURCE_DIR"
-make zip >&2
-jq -n --arg filename "$SOURCE_DIR/dist/list-books.zip" '{"filename": $filename}'
-EOT
-  ]
-
-  query = {
-    # This query makes sure the external data source is re-triggered when .go files change
+resource "null_resource" "build_list_books_lambda" {
+  triggers = {
     source_hash = local.source_hash
+  }
+
+  provisioner "local-exec" {
+    command = "cd ${local.lambda_source_dir} && make zip"
   }
 }
 
@@ -70,11 +64,12 @@ resource "aws_lambda_function" "list_books_lambda" {
   handler       = "bootstrap"
   runtime       = "provided.al2"
 
-  filename         = data.external.build_list_books_lambda.result.filename
-  source_code_hash = filebase64sha256(data.external.build_list_books_lambda.result.filename)
+  filename         = "${local.lambda_source_dir}/dist/list-books.zip"
+  source_code_hash = local.source_hash
 
   depends_on = [
     aws_iam_role_policy_attachment.list_books_lambda_basic_execution,
     aws_iam_role_policy_attachment.list_books_lambda_dynamodb_read,
+    null_resource.build_list_books_lambda,
   ]
 } 

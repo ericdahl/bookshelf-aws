@@ -4,19 +4,13 @@ locals {
   search_source_hash       = sha1(join("", [for f in local.search_go_files_for_hash : filesha1("${local.search_lambda_source_dir}/${f}")]))
 }
 
-data "external" "build_search_books_lambda" {
-  program = ["bash", "-c", <<EOT
-set -e
-SOURCE_DIR="${local.search_lambda_source_dir}"
-cd "$SOURCE_DIR"
-make zip >&2
-jq -n --arg filename "$SOURCE_DIR/dist/search-books.zip" '{"filename": $filename}'
-EOT
-  ]
-
-  query = {
-    # This query makes sure the external data source is re-triggered when .go files change
+resource "null_resource" "build_search_books_lambda" {
+  triggers = {
     source_hash = local.search_source_hash
+  }
+
+  provisioner "local-exec" {
+    command = "cd ${local.search_lambda_source_dir} && make zip"
   }
 }
 
@@ -46,11 +40,12 @@ resource "aws_lambda_function" "search_books_lambda" {
   handler       = "bootstrap"
   runtime       = "provided.al2"
 
-  filename         = data.external.build_search_books_lambda.result.filename
-  source_code_hash = filebase64sha256(data.external.build_search_books_lambda.result.filename)
+  filename         = "${local.search_lambda_source_dir}/dist/search-books.zip"
+  source_code_hash = local.search_source_hash
 
   depends_on = [
     aws_iam_role_policy_attachment.search_books_lambda_basic_execution,
+    null_resource.build_search_books_lambda,
   ]
 }
 
