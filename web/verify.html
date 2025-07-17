@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Email - Bookshelf</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Nunito+Sans:wght@400;600;700&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .auth-container {
+            max-width: 400px;
+            margin: 50px auto;
+            padding: 30px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .auth-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .auth-header h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        .auth-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        .form-group label {
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #34495e;
+        }
+        .form-group input {
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        .auth-button {
+            padding: 12px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .auth-button:hover {
+            background-color: #2980b9;
+        }
+        .auth-button:disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
+        }
+        .auth-button.secondary {
+            background-color: #95a5a6;
+            margin-top: 10px;
+        }
+        .auth-button.secondary:hover {
+            background-color: #7f8c8d;
+        }
+        .auth-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .auth-link a {
+            color: #3498db;
+            text-decoration: none;
+        }
+        .auth-link a:hover {
+            text-decoration: underline;
+        }
+        .error-message {
+            color: #e74c3c;
+            background-color: #fadbd8;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        .success-message {
+            color: #27ae60;
+            background-color: #d5f4e6;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        .app-branding {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .app-icon {
+            width: 32px;
+            height: 32px;
+            margin-right: 10px;
+        }
+        .verification-info {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-header">
+            <div class="app-branding">
+                <img src="icon.png" alt="Bookshelf App Icon" class="app-icon">
+                <h1>Bookshelf</h1>
+            </div>
+            <h2>Verify Your Email</h2>
+        </div>
+        
+        <div class="verification-info">
+            We've sent a verification code to your email address. Please check your inbox and enter the code below.
+        </div>
+        
+        <div id="error-message" class="error-message"></div>
+        <div id="success-message" class="success-message"></div>
+        
+        <form id="verify-form" class="auth-form">
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" required readonly>
+            </div>
+            
+            <div class="form-group">
+                <label for="verification-code">Verification Code</label>
+                <input type="text" id="verification-code" name="verification-code" required maxlength="6" placeholder="Enter 6-digit code">
+            </div>
+            
+            <button type="submit" id="verify-button" class="auth-button">Verify Email</button>
+            <button type="button" id="resend-button" class="auth-button secondary">Resend Code</button>
+        </form>
+        
+        <div class="auth-link">
+            <a href="signin.html">Back to Sign In</a>
+        </div>
+    </div>
+
+    <script src="https://sdk.amazonaws.com/js/aws-sdk-2.1691.0.min.js"></script>
+    <script src="https://unpkg.com/amazon-cognito-identity-js@6.3.7/dist/amazon-cognito-identity.min.js"></script>
+    <script>
+        // Cognito configuration
+        const COGNITO_CONFIG = {
+            userPoolId: 'us-east-1_yqnoWMmU6',
+            clientId: '4645dqoa4ng95qqn9kkeearsil',
+            region: 'us-east-1'
+        };
+
+        // Initialize Cognito User Pool
+        const poolData = {
+            UserPoolId: COGNITO_CONFIG.userPoolId,
+            ClientId: COGNITO_CONFIG.clientId
+        };
+        const userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
+
+        // DOM elements
+        const verifyForm = document.getElementById('verify-form');
+        const verifyButton = document.getElementById('verify-button');
+        const resendButton = document.getElementById('resend-button');
+        const errorMessage = document.getElementById('error-message');
+        const successMessage = document.getElementById('success-message');
+        const emailInput = document.getElementById('email');
+
+        // Get email from URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const email = urlParams.get('email');
+
+        if (email) {
+            emailInput.value = email;
+        } else {
+            showError('Email not provided. Please go back and try again.');
+        }
+
+        // Form submission handler
+        verifyForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = emailInput.value;
+            const code = document.getElementById('verification-code').value;
+            
+            // Clear previous messages
+            hideMessages();
+            
+            // Disable button and show loading
+            verifyButton.disabled = true;
+            verifyButton.textContent = 'Verifying...';
+            
+            try {
+                await verifyUser(email, code);
+                showSuccess('Email verified successfully! Redirecting to sign in...');
+                
+                // Redirect to sign in page after 2 seconds
+                setTimeout(() => {
+                    window.location.href = 'signin.html';
+                }, 2000);
+                
+            } catch (error) {
+                showError(error.message || 'Failed to verify email. Please try again.');
+            } finally {
+                verifyButton.disabled = false;
+                verifyButton.textContent = 'Verify Email';
+            }
+        });
+
+        // Resend code handler
+        resendButton.addEventListener('click', async (e) => {
+            e.preventDefault();
+            
+            const email = emailInput.value;
+            
+            // Clear previous messages
+            hideMessages();
+            
+            // Disable button and show loading
+            resendButton.disabled = true;
+            resendButton.textContent = 'Resending...';
+            
+            try {
+                await resendVerificationCode(email);
+                showSuccess('Verification code resent! Please check your email.');
+            } catch (error) {
+                showError(error.message || 'Failed to resend code. Please try again.');
+            } finally {
+                resendButton.disabled = false;
+                resendButton.textContent = 'Resend Code';
+            }
+        });
+
+        // Verify user function
+        function verifyUser(email, code) {
+            return new Promise((resolve, reject) => {
+                const userData = {
+                    Username: email,
+                    Pool: userPool,
+                };
+
+                const cognitoUser = new AmazonCognitoIdentity.CognitoUser(userData);
+
+                cognitoUser.confirmRegistration(code, true, (err, result) => {
+                    if (err) {
+                        reject(err);
+                        return;
+                    }
+                    resolve(result);
+                });
+            });
+        }
+
+        // Resend verification code function
+        function resendVerificationCode(email) {
+            return new Promise((resolve, reject) => {
+                const userData = {
+                    Username: email,
+                    Pool: userPool,
+                };
+
+                const cognitoUser = new AmazonCognitoIdentity.CognitoUser(userData);
+
+                cognitoUser.resendConfirmationCode((err, result) => {
+                    if (err) {
+                        reject(err);
+                        return;
+                    }
+                    resolve(result);
+                });
+            });
+        }
+
+        // Utility functions
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+            successMessage.style.display = 'none';
+        }
+
+        function showSuccess(message) {
+            successMessage.textContent = message;
+            successMessage.style.display = 'block';
+            errorMessage.style.display = 'none';
+        }
+
+        function hideMessages() {
+            errorMessage.style.display = 'none';
+            successMessage.style.display = 'none';
+        }
+    </script>
+</body>
+</html>

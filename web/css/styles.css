@@ -32,6 +32,25 @@ button:hover {
     background-color: #2980b9;
 }
 
+.auth-button {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.auth-button:hover {
+    background-color: #2980b9;
+}
+
+.user-controls {
+    margin-left: 20px;
+}
+
 .primary-button {
     background-color: #2ecc71;
 }

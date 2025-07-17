@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - Bookshelf</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Nunito+Sans:wght@400;600;700&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .auth-container {
+            max-width: 400px;
+            margin: 50px auto;
+            padding: 30px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .auth-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .auth-header h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        .auth-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        .form-group label {
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #34495e;
+        }
+        .form-group input {
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        .auth-button {
+            padding: 12px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .auth-button:hover {
+            background-color: #2980b9;
+        }
+        .auth-button:disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
+        }
+        .auth-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .auth-link a {
+            color: #3498db;
+            text-decoration: none;
+        }
+        .auth-link a:hover {
+            text-decoration: underline;
+        }
+        .error-message {
+            color: #e74c3c;
+            background-color: #fadbd8;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        .success-message {
+            color: #27ae60;
+            background-color: #d5f4e6;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        .app-branding {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .app-icon {
+            width: 32px;
+            height: 32px;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-header">
+            <div class="app-branding">
+                <img src="icon.png" alt="Bookshelf App Icon" class="app-icon">
+                <h1>Bookshelf</h1>
+            </div>
+            <h2>Create Account</h2>
+        </div>
+        
+        <div id="error-message" class="error-message"></div>
+        <div id="success-message" class="success-message"></div>
+        
+        <form id="signup-form" class="auth-form">
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="name">Full Name</label>
+                <input type="text" id="name" name="name" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required>
+                <small>Must be at least 8 characters with uppercase, lowercase, numbers, and symbols</small>
+            </div>
+            
+            <div class="form-group">
+                <label for="confirm-password">Confirm Password</label>
+                <input type="password" id="confirm-password" name="confirm-password" required>
+            </div>
+            
+            <button type="submit" id="signup-button" class="auth-button">Sign Up</button>
+        </form>
+        
+        <div class="auth-link">
+            Already have an account? <a href="signin.html">Sign In</a>
+        </div>
+    </div>
+
+    <script src="https://sdk.amazonaws.com/js/aws-sdk-2.1691.0.min.js"></script>
+    <script src="https://unpkg.com/amazon-cognito-identity-js@6.3.7/dist/amazon-cognito-identity.min.js"></script>
+    <script>
+        // Cognito configuration
+        const COGNITO_CONFIG = {
+            userPoolId: 'us-east-1_yqnoWMmU6',
+            clientId: '4645dqoa4ng95qqn9kkeearsil',
+            region: 'us-east-1'
+        };
+
+        // Initialize Cognito User Pool
+        const poolData = {
+            UserPoolId: COGNITO_CONFIG.userPoolId,
+            ClientId: COGNITO_CONFIG.clientId
+        };
+        const userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
+
+        // DOM elements
+        const signupForm = document.getElementById('signup-form');
+        const signupButton = document.getElementById('signup-button');
+        const errorMessage = document.getElementById('error-message');
+        const successMessage = document.getElementById('success-message');
+
+        // Form submission handler
+        signupForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const name = document.getElementById('name').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+            
+            // Clear previous messages
+            hideMessages();
+            
+            // Validate passwords match
+            if (password !== confirmPassword) {
+                showError('Passwords do not match');
+                return;
+            }
+            
+            // Disable button and show loading
+            signupButton.disabled = true;
+            signupButton.textContent = 'Creating Account...';
+            
+            try {
+                await signUpUser(email, name, password);
+                showSuccess('Account created successfully! Please check your email for verification code.');
+                
+                // Redirect to verification page after 3 seconds
+                setTimeout(() => {
+                    window.location.href = `verify.html?email=${encodeURIComponent(email)}`;
+                }, 3000);
+                
+            } catch (error) {
+                showError(error.message || 'Failed to create account. Please try again.');
+            } finally {
+                signupButton.disabled = false;
+                signupButton.textContent = 'Sign Up';
+            }
+        });
+
+        // Sign up user function
+        function signUpUser(email, name, password) {
+            return new Promise((resolve, reject) => {
+                const attributeList = [];
+                
+                // Add email attribute
+                const emailAttribute = new AmazonCognitoIdentity.CognitoUserAttribute({
+                    Name: 'email',
+                    Value: email
+                });
+                attributeList.push(emailAttribute);
+                
+                // Add name attribute
+                const nameAttribute = new AmazonCognitoIdentity.CognitoUserAttribute({
+                    Name: 'name',
+                    Value: name
+                });
+                attributeList.push(nameAttribute);
+                
+                userPool.signUp(email, password, attributeList, null, (err, result) => {
+                    if (err) {
+                        reject(err);
+                        return;
+                    }
+                    resolve(result);
+                });
+            });
+        }
+
+        // Utility functions
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+            successMessage.style.display = 'none';
+        }
+
+        function showSuccess(message) {
+            successMessage.textContent = message;
+            successMessage.style.display = 'block';
+            errorMessage.style.display = 'none';
+        }
+
+        function hideMessages() {
+            errorMessage.style.display = 'none';
+            successMessage.style.display = 'none';
+        }
+    </script>
+</body>
+</html>

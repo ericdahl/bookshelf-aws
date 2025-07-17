@@ -10,7 +10,7 @@
   "filesCount": 2,
   "presets": {
     "requestType": "http",
-    "requestUrl": "https://465th5tzbg.execute-api.us-east-1.amazonaws.com/prod"
+    "requestUrl": "https://wl32jdoac6.execute-api.us-east-1.amazonaws.com/prod"
   }
   
 }

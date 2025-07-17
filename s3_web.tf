@@ -93,4 +93,29 @@ resource "aws_s3_object" "icon_png" {
   source       = "web/icon.png"
   content_type = "image/png"
   etag         = filemd5("web/icon.png")
+}
+
+# Upload authentication pages
+resource "aws_s3_object" "signup_html" {
+  bucket       = aws_s3_bucket.bookshelf_web.id
+  key          = "signup.html"
+  source       = "web/signup.html"
+  content_type = "text/html"
+  etag         = filemd5("web/signup.html")
+}
+
+resource "aws_s3_object" "signin_html" {
+  bucket       = aws_s3_bucket.bookshelf_web.id
+  key          = "signin.html"
+  source       = "web/signin.html"
+  content_type = "text/html"
+  etag         = filemd5("web/signin.html")
+}
+
+resource "aws_s3_object" "verify_html" {
+  bucket       = aws_s3_bucket.bookshelf_web.id
+  key          = "verify.html"
+  source       = "web/verify.html"
+  content_type = "text/html"
+  etag         = filemd5("web/verify.html")
 } 

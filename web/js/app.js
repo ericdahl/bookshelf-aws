@@ -1,6 +1,12 @@
 document.addEventListener('DOMContentLoaded', function() {
+    // Check authentication before loading app
+    if (!checkAuthentication()) {
+        window.location.href = 'signin.html';
+        return;
+    }
+
     // API endpoints
-    const API_BASE_URL = 'https://465th5tzbg.execute-api.us-east-1.amazonaws.com/prod';
+    const API_BASE_URL = 'https://wl32jdoac6.execute-api.us-east-1.amazonaws.com/prod';
     const API = {
         BOOKS: `${API_BASE_URL}/books`,
         SEARCH: `${API_BASE_URL}/search`, // Google Books search endpoint
@@ -1175,4 +1181,22 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     }
+
+    // Authentication functions
+    function checkAuthentication() {
+        // Simple localStorage check - in production, you'd want to validate JWT tokens
+        return localStorage.getItem('isAuthenticated') === 'true';
+    }
+
+    function signOut() {
+        // Clear authentication state
+        localStorage.removeItem('isAuthenticated');
+        localStorage.removeItem('userEmail');
+        
+        // Redirect to signin page
+        window.location.href = 'signin.html';
+    }
+
+    // Make signOut function available globally
+    window.signOut = signOut;
 });

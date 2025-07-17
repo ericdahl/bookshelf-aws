@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In - Bookshelf</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Nunito+Sans:wght@400;600;700&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .auth-container {
+            max-width: 400px;
+            margin: 50px auto;
+            padding: 30px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .auth-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .auth-header h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        .auth-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        .form-group label {
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #34495e;
+        }
+        .form-group input {
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        .auth-button {
+            padding: 12px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .auth-button:hover {
+            background-color: #2980b9;
+        }
+        .auth-button:disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
+        }
+        .auth-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .auth-link a {
+            color: #3498db;
+            text-decoration: none;
+        }
+        .auth-link a:hover {
+            text-decoration: underline;
+        }
+        .error-message {
+            color: #e74c3c;
+            background-color: #fadbd8;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        .success-message {
+            color: #27ae60;
+            background-color: #d5f4e6;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        .app-branding {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .app-icon {
+            width: 32px;
+            height: 32px;
+            margin-right: 10px;
+        }
+        .forgot-password {
+            text-align: center;
+            margin-top: 15px;
+        }
+        .forgot-password a {
+            color: #7f8c8d;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        .forgot-password a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-header">
+            <div class="app-branding">
+                <img src="icon.png" alt="Bookshelf App Icon" class="app-icon">
+                <h1>Bookshelf</h1>
+            </div>
+            <h2>Welcome Back</h2>
+        </div>
+        
+        <div id="error-message" class="error-message"></div>
+        <div id="success-message" class="success-message"></div>
+        
+        <form id="signin-form" class="auth-form">
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            
+            <button type="submit" id="signin-button" class="auth-button">Sign In</button>
+        </form>
+        
+        <div class="forgot-password">
+            <a href="#" id="forgot-password-link">Forgot your password?</a>
+        </div>
+        
+        <div class="auth-link">
+            Don't have an account? <a href="signup.html">Sign Up</a>
+        </div>
+    </div>
+
+    <script src="https://sdk.amazonaws.com/js/aws-sdk-2.1691.0.min.js"></script>
+    <script src="https://unpkg.com/amazon-cognito-identity-js@6.3.7/dist/amazon-cognito-identity.min.js"></script>
+    <script>
+        // Cognito configuration
+        const COGNITO_CONFIG = {
+            userPoolId: 'us-east-1_yqnoWMmU6',
+            clientId: '4645dqoa4ng95qqn9kkeearsil',
+            region: 'us-east-1'
+        };
+
+        // Initialize Cognito User Pool
+        const poolData = {
+            UserPoolId: COGNITO_CONFIG.userPoolId,
+            ClientId: COGNITO_CONFIG.clientId
+        };
+        const userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
+
+        // DOM elements
+        const signinForm = document.getElementById('signin-form');
+        const signinButton = document.getElementById('signin-button');
+        const errorMessage = document.getElementById('error-message');
+        const successMessage = document.getElementById('success-message');
+        const forgotPasswordLink = document.getElementById('forgot-password-link');
+
+        // Form submission handler
+        signinForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            // Clear previous messages
+            hideMessages();
+            
+            // Disable button and show loading
+            signinButton.disabled = true;
+            signinButton.textContent = 'Signing In...';
+            
+            try {
+                const result = await signInUser(email, password);
+                showSuccess('Sign in successful! Redirecting...');
+                
+                // Store authentication info
+                localStorage.setItem('isAuthenticated', 'true');
+                localStorage.setItem('userEmail', email);
+                
+                // Redirect to main app
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 1500);
+                
+            } catch (error) {
+                if (error.code === 'UserNotConfirmedException') {
+                    showError('Please verify your email address first.');
+                    setTimeout(() => {
+                        window.location.href = `verify.html?email=${encodeURIComponent(email)}`;
+                    }, 3000);
+                } else {
+                    showError(error.message || 'Failed to sign in. Please try again.');
+                }
+            } finally {
+                signinButton.disabled = false;
+                signinButton.textContent = 'Sign In';
+            }
+        });
+
+        // Forgot password handler
+        forgotPasswordLink.addEventListener('click', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            if (!email) {
+                showError('Please enter your email address first.');
+                return;
+            }
+            
+            try {
+                await forgotPassword(email);
+                showSuccess('Password reset instructions sent to your email.');
+            } catch (error) {
+                showError(error.message || 'Failed to send reset instructions.');
+            }
+        });
+
+        // Sign in user function
+        function signInUser(email, password) {
+            return new Promise((resolve, reject) => {
+                const authenticationDetails = new AmazonCognitoIdentity.AuthenticationDetails({
+                    Username: email,
+                    Password: password,
+                });
+
+                const userData = {
+                    Username: email,
+                    Pool: userPool,
+                };
+
+                const cognitoUser = new AmazonCognitoIdentity.CognitoUser(userData);
+
+                cognitoUser.authenticateUser(authenticationDetails, {
+                    onSuccess: (result) => {
+                        resolve(result);
+                    },
+                    onFailure: (err) => {
+                        reject(err);
+                    },
+                    newPasswordRequired: (userAttributes, requiredAttributes) => {
+                        // Handle new password required case
+                        reject(new Error('New password required. Please contact support.'));
+                    }
+                });
+            });
+        }
+
+        // Forgot password function
+        function forgotPassword(email) {
+            return new Promise((resolve, reject) => {
+                const userData = {
+                    Username: email,
+                    Pool: userPool,
+                };
+
+                const cognitoUser = new AmazonCognitoIdentity.CognitoUser(userData);
+
+                cognitoUser.forgotPassword({
+                    onSuccess: (result) => {
+                        resolve(result);
+                    },
+                    onFailure: (err) => {
+                        reject(err);
+                    }
+                });
+            });
+        }
+
+        // Utility functions
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+            successMessage.style.display = 'none';
+        }
+
+        function showSuccess(message) {
+            successMessage.textContent = message;
+            successMessage.style.display = 'block';
+            errorMessage.style.display = 'none';
+        }
+
+        function hideMessages() {
+            errorMessage.style.display = 'none';
+            successMessage.style.display = 'none';
+        }
+    </script>
+</body>
+</html>
