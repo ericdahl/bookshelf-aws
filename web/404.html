@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - Page Not Found | Bookshelf</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Nunito+Sans:wght@400;600;700&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .error-container {
+            text-align: center;
+            max-width: 600px;
+            padding: 40px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            margin: 20px;
+        }
+
+        .error-code {
+            font-size: 120px;
+            font-weight: 700;
+            color: #3498db;
+            margin: 0;
+            line-height: 1;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .error-title {
+            font-size: 32px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin: 20px 0;
+        }
+
+        .error-subtitle {
+            font-size: 18px;
+            color: #7f8c8d;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .book-icon {
+            font-size: 60px;
+            color: #e74c3c;
+            margin-bottom: 20px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .error-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .action-button {
+            display: inline-block;
+            padding: 12px 30px;
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            min-width: 160px;
+        }
+
+        .action-button:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+        }
+
+        .action-button.secondary {
+            background-color: #95a5a6;
+        }
+
+        .action-button.secondary:hover {
+            background-color: #7f8c8d;
+            box-shadow: 0 5px 15px rgba(149, 165, 166, 0.3);
+        }
+
+        .suggestions {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #ecf0f1;
+        }
+
+        .suggestions h3 {
+            font-size: 20px;
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+
+        .suggestions ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .suggestions li {
+            margin-bottom: 10px;
+            color: #7f8c8d;
+        }
+
+        .suggestions a {
+            color: #3498db;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .suggestions a:hover {
+            text-decoration: underline;
+        }
+
+        .app-branding {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        .app-icon {
+            width: 40px;
+            height: 40px;
+            margin-right: 12px;
+        }
+
+        .app-name {
+            font-size: 28px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin: 0;
+        }
+
+        @media (max-width: 768px) {
+            .error-code {
+                font-size: 80px;
+            }
+            
+            .error-title {
+                font-size: 24px;
+            }
+            
+            .error-subtitle {
+                font-size: 16px;
+            }
+            
+            .error-container {
+                padding: 20px;
+                margin: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <div class="app-branding">
+            <img src="icon.png" alt="Bookshelf App Icon" class="app-icon">
+            <h1 class="app-name">Bookshelf</h1>
+        </div>
+        
+        <div class="book-icon">
+            <i class="fas fa-book-open"></i>
+        </div>
+        
+        <div class="error-code">404</div>
+        <h2 class="error-title">Page Not Found</h2>
+        <p class="error-subtitle">
+            Oops! The page you're looking for seems to have gone missing from our bookshelf. 
+            It might have been moved, deleted, or you entered the wrong URL.
+        </p>
+        
+        <div class="error-actions">
+            <a href="/" class="action-button" onclick="goHome()">
+                <i class="fas fa-home"></i> Go to Homepage
+            </a>
+            <button class="action-button secondary" onclick="goBack()">
+                <i class="fas fa-arrow-left"></i> Go Back
+            </button>
+        </div>
+        
+        <div class="suggestions">
+            <h3>You might want to try:</h3>
+            <ul>
+                <li>🏠 <a href="/">Return to the main bookshelf</a></li>
+                <li>🔍 <a href="/">Search for books in your collection</a></li>
+                <li>📚 <a href="/">Browse your reading lists</a></li>
+                <li>👤 <a href="signin.html">Sign in to your account</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function goHome() {
+            // Check if user is authenticated
+            const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
+            
+            if (isAuthenticated) {
+                window.location.href = '/';
+            } else {
+                window.location.href = '/signin.html';
+            }
+        }
+
+        function goBack() {
+            if (window.history.length > 1) {
+                window.history.back();
+            } else {
+                goHome();
+            }
+        }
+
+        // Handle link clicks to check authentication
+        document.addEventListener('DOMContentLoaded', function() {
+            const homeLinks = document.querySelectorAll('a[href="/"]');
+            homeLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    goHome();
+                });
+            });
+        });
+    </script>
+</body>
+</html>

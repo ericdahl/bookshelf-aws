@@ -17,7 +17,7 @@ resource "aws_s3_bucket_website_configuration" "bookshelf_web" {
   }
 
   error_document {
-    key = "index.html"
+    key = "404.html"
   }
 }
 
@@ -118,4 +118,12 @@ resource "aws_s3_object" "verify_html" {
   source       = "web/verify.html"
   content_type = "text/html"
   etag         = filemd5("web/verify.html")
+}
+
+resource "aws_s3_object" "error_404_html" {
+  bucket       = aws_s3_bucket.bookshelf_web.id
+  key          = "404.html"
+  source       = "web/404.html"
+  content_type = "text/html"
+  etag         = filemd5("web/404.html")
 } 
