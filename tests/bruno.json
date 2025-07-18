@@ -11,6 +11,11 @@
   "presets": {
     "requestType": "http",
     "requestUrl": "https://wl32jdoac6.execute-api.us-east-1.amazonaws.com/prod"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": {
+      "token": "{{jwt_token}}"
+    }
   }
-  
 }

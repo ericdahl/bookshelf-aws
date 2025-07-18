@@ -13,7 +13,7 @@ resource "aws_cognito_user_pool" "bookshelf_user_pool" {
 
   # User attributes
   username_attributes = ["email"]
-  
+
   # Auto verification
   auto_verified_attributes = ["email"]
 
@@ -52,9 +52,9 @@ resource "aws_cognito_user_pool_client" "bookshelf_client" {
   user_pool_id = aws_cognito_user_pool.bookshelf_user_pool.id
 
   # Client settings
-  generate_secret                      = false
-  prevent_user_existence_errors        = "ENABLED"
-  enable_token_revocation              = true
+  generate_secret                               = false
+  prevent_user_existence_errors                 = "ENABLED"
+  enable_token_revocation                       = true
   enable_propagate_additional_user_context_data = false
 
   # Auth flows
@@ -66,7 +66,7 @@ resource "aws_cognito_user_pool_client" "bookshelf_client" {
 
   # Token validity
   access_token_validity  = 24
-  id_token_validity     = 24
+  id_token_validity      = 24
   refresh_token_validity = 30
 
   token_validity_units {
@@ -115,15 +115,15 @@ output "cognito_user_pool_domain" {
 resource "aws_cognito_user" "test_user" {
   user_pool_id = aws_cognito_user_pool.bookshelf_user_pool.id
   username     = "testuser@example.com"
-  
+
   attributes = {
-    email           = "testuser@example.com"
-    email_verified  = "true"
+    email          = "testuser@example.com"
+    email_verified = "true"
     name           = "Test User"
   }
-  
+
   password = "TestPassword123!"
-  
+
   # Ensure the user is confirmed and doesn't need email verification
   message_action = "SUPPRESS"
 }

@@ -18,10 +18,10 @@ AUTH_RESPONSE=$(aws cognito-idp initiate-auth \
     --region us-east-1 \
     --output json)
 
-# Extract ID token
-ID_TOKEN=$(echo "$AUTH_RESPONSE" | jq -r '.AuthenticationResult.IdToken')
+# Extract Access token (required for API authentication, not ID token)
+ACCESS_TOKEN=$(echo "$AUTH_RESPONSE" | jq -r '.AuthenticationResult.AccessToken')
 
-if [ "$ID_TOKEN" = "null" ] || [ -z "$ID_TOKEN" ]; then
+if [ "$ACCESS_TOKEN" = "null" ] || [ -z "$ACCESS_TOKEN" ]; then
     echo "Failed to get authentication token"
     echo "Response: $AUTH_RESPONSE"
     exit 1
@@ -36,7 +36,7 @@ API_URL="https://wl32jdoac6.execute-api.us-east-1.amazonaws.com/prod"
 cat > "$(dirname "$0")/environments/dev.bru" << EOF
 vars {
   base_url: $API_URL
-  jwt_token: $ID_TOKEN
+  jwt_token: $ACCESS_TOKEN
 }
 EOF
 
