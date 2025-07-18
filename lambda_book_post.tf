@@ -80,6 +80,9 @@ resource "aws_apigatewayv2_route" "create_book_route" {
   api_id    = aws_apigatewayv2_api.books_api.id
   route_key = "POST /books"
   target    = "integrations/${aws_apigatewayv2_integration.create_book_lambda_integration.id}"
+  
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito_authorizer.id
 }
 
 resource "aws_lambda_permission" "create_book_api_gateway_permission" {

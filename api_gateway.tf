@@ -19,6 +19,18 @@ resource "aws_apigatewayv2_stage" "api_stage" {
   auto_deploy = true
 }
 
+resource "aws_apigatewayv2_authorizer" "cognito_authorizer" {
+  api_id           = aws_apigatewayv2_api.books_api.id
+  authorizer_type  = "JWT"
+  identity_sources = ["$request.header.Authorization"]
+  name             = "cognito-authorizer"
+
+  jwt_configuration {
+    # For access tokens, no audience is required
+    issuer   = "https://cognito-idp.us-east-1.amazonaws.com/${aws_cognito_user_pool.bookshelf_user_pool.id}"
+  }
+}
+
 resource "aws_apigatewayv2_integration" "lambda_integration" {
   api_id           = aws_apigatewayv2_api.books_api.id
   integration_type = "AWS_PROXY"
@@ -31,6 +43,9 @@ resource "aws_apigatewayv2_route" "get_books_route" {
   api_id    = aws_apigatewayv2_api.books_api.id
   route_key = "GET /books"
   target    = "integrations/${aws_apigatewayv2_integration.lambda_integration.id}"
+  
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito_authorizer.id
 }
 
 resource "aws_lambda_permission" "api_gateway_permission" {

@@ -67,12 +67,6 @@ resource "aws_lambda_function" "list_books_lambda" {
   filename         = "${local.lambda_source_dir}/dist/list-books.zip"
   source_code_hash = local.source_hash
 
-  environment {
-    variables = {
-      COGNITO_USER_POOL_ID = aws_cognito_user_pool.bookshelf_user_pool.id
-      COGNITO_REGION       = "us-east-1"
-    }
-  }
 
   depends_on = [
     aws_iam_role_policy_attachment.list_books_lambda_basic_execution,
