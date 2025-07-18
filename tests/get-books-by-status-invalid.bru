@@ -10,6 +10,10 @@ get {
   auth: none
 }
 
+headers {
+  Authorization: Bearer {{jwt_token}}
+}
+
 assert {
   res.status: eq 200
   res.body.length: eq 0
