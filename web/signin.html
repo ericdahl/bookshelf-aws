@@ -156,18 +156,15 @@
 
     <script src="https://sdk.amazonaws.com/js/aws-sdk-2.1691.0.min.js"></script>
     <script src="https://unpkg.com/amazon-cognito-identity-js@6.3.7/dist/amazon-cognito-identity.min.js"></script>
+    <script src="js/config.js"></script>
     <script>
         // Cognito configuration
-        const COGNITO_CONFIG = {
-            userPoolId: 'us-east-1_yqnoWMmU6',
-            clientId: '4645dqoa4ng95qqn9kkeearsil',
-            region: 'us-east-1'
-        };
+        const COGNITO_CONFIG = window.APP_CONFIG.COGNITO;
 
         // Initialize Cognito User Pool
         const poolData = {
-            UserPoolId: COGNITO_CONFIG.userPoolId,
-            ClientId: COGNITO_CONFIG.clientId
+            UserPoolId: window.APP_CONFIG.COGNITO.userPoolId,
+            ClientId: window.APP_CONFIG.COGNITO.clientId
         };
         const userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
 

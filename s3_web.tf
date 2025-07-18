@@ -77,6 +77,14 @@ resource "aws_s3_object" "app_js" {
   etag         = filemd5("web/js/app.js")
 }
 
+resource "aws_s3_object" "config_js" {
+  bucket       = aws_s3_bucket.bookshelf_web.id
+  key          = "js/config.js"
+  source       = "web/js/config.js"
+  content_type = "application/javascript"
+  etag         = filemd5("web/js/config.js")
+}
+
 # Upload favicon
 resource "aws_s3_object" "favicon" {
   bucket       = aws_s3_bucket.bookshelf_web.id

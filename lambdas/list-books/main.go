@@ -25,10 +25,27 @@ import (
 const tableName = "books"
 
 // Cognito configuration
-const (
-	cognitoUserPoolID = "us-east-1_yqnoWMmU6"
-	cognitoRegion     = "us-east-1"
+var (
+	cognitoUserPoolID = getRequiredEnv("COGNITO_USER_POOL_ID")
+	cognitoRegion     = getRequiredEnv("COGNITO_REGION")
 )
+
+// getRequiredEnv gets environment variable value or panics if not set
+func getRequiredEnv(key string) string {
+	if value := os.Getenv(key); value != "" {
+		return value
+	}
+	log.Fatalf("Required environment variable %s is not set", key)
+	return "" // Never reached, but needed for compilation
+}
+
+// getEnv gets environment variable value or returns default
+func getEnv(key, defaultValue string) string {
+	if value := os.Getenv(key); value != "" {
+		return value
+	}
+	return defaultValue
+}
 
 // ddbClient is the DynamoDB client.
 var ddbClient *dynamodb.Client

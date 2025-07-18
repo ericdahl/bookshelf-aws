@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // API endpoints
-    const API_BASE_URL = 'https://wl32jdoac6.execute-api.us-east-1.amazonaws.com/prod';
+    const API_BASE_URL = window.APP_CONFIG.API_BASE_URL;
     const API = {
         BOOKS: `${API_BASE_URL}/books`,
         SEARCH: `${API_BASE_URL}/search`, // Google Books search endpoint
@@ -1215,8 +1215,8 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             // Initialize Cognito SDK if not already done
             const poolData = {
-                UserPoolId: 'us-east-1_yqnoWMmU6',
-                ClientId: '4645dqoa4ng95qqn9kkeearsil'
+                UserPoolId: window.APP_CONFIG.COGNITO.userPoolId,
+                ClientId: window.APP_CONFIG.COGNITO.clientId
             };
             
             const userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
@@ -1269,8 +1269,8 @@ document.addEventListener('DOMContentLoaded', function() {
         // Sign out from Cognito
         try {
             const poolData = {
-                UserPoolId: 'us-east-1_yqnoWMmU6',
-                ClientId: '4645dqoa4ng95qqn9kkeearsil'
+                UserPoolId: window.APP_CONFIG.COGNITO.userPoolId,
+                ClientId: window.APP_CONFIG.COGNITO.clientId
             };
             
             const userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);

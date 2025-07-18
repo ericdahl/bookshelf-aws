@@ -6,7 +6,7 @@ echo "Setting up authentication for tests..."
 echo "Using test user credentials from configuration..."
 TEST_EMAIL="testuser@example.com"
 TEST_PASSWORD="TestPassword123!"
-CLIENT_ID="4645dqoa4ng95qqn9kkeearsil"
+CLIENT_ID="qp747fpqlkn9squ682fhj48oi"
 
 echo "Authenticating user: $TEST_EMAIL"
 
@@ -30,7 +30,7 @@ fi
 echo "Authentication successful!"
 
 # Use correct API Gateway URL (fallback since terraform output may not work without AWS auth)
-API_URL="https://wl32jdoac6.execute-api.us-east-1.amazonaws.com/prod"
+API_URL="https://0ioimabj53.execute-api.us-east-1.amazonaws.com/prod"
 
 # Update dev.bru environment file
 cat > "$(dirname "$0")/environments/dev.bru" << EOF
