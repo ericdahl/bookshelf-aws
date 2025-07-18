@@ -110,3 +110,33 @@ output "cognito_user_pool_domain" {
   description = "Domain of the Cognito User Pool"
   value       = aws_cognito_user_pool.bookshelf_user_pool.domain
 }
+
+# Test user for automated testing
+resource "aws_cognito_user" "test_user" {
+  user_pool_id = aws_cognito_user_pool.bookshelf_user_pool.id
+  username     = "testuser@example.com"
+  
+  attributes = {
+    email           = "testuser@example.com"
+    email_verified  = "true"
+    name           = "Test User"
+  }
+  
+  password = "TestPassword123!"
+  
+  # Ensure the user is confirmed and doesn't need email verification
+  message_action = "SUPPRESS"
+}
+
+# Output test user credentials for automated tests
+output "test_user_email" {
+  description = "Email of the test user for automated testing"
+  value       = aws_cognito_user.test_user.username
+  sensitive   = true
+}
+
+output "test_user_password" {
+  description = "Password of the test user for automated testing"
+  value       = aws_cognito_user.test_user.password
+  sensitive   = true
+}
