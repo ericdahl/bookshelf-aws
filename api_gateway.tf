@@ -26,7 +26,7 @@ resource "aws_apigatewayv2_authorizer" "cognito_authorizer" {
   name             = "cognito-authorizer"
 
   jwt_configuration {
-    # For access tokens, no audience is required
+    audience = [aws_cognito_user_pool_client.bookshelf_client.id]
     issuer   = "https://cognito-idp.us-east-1.amazonaws.com/${aws_cognito_user_pool.bookshelf_user_pool.id}"
   }
 }
