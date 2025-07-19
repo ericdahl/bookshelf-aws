@@ -15,7 +15,7 @@ headers {
 }
 
 script:post-response {
-  const book = res.body.find(b => b.title === "The Way of Kings");
+  const book = res.body.find(b => b.title === "The Way of Kings" && b.id === "a1b2c3d4-e5f6-7890-1234-567890abcdef");
   test("Find 'The Way of Kings'", () => {
     expect(book).to.exist;
     expect(book.id).to.exist;
