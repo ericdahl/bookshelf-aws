@@ -958,16 +958,21 @@ document.addEventListener('DOMContentLoaded', function() {
     function saveBookDetails() {
         if (!currentBook) return;
         
+        // Get the selected book type
+        const bookTypeRadio = document.querySelector('input[name="book-type"]:checked');
+        const bookType = bookTypeRadio ? bookTypeRadio.value : 'book';
+        
         // Get the updated values from the form
         const updatedBook = {
             series: document.getElementById('book-series').value || undefined,
             rating: currentRating || undefined,
-            review: document.getElementById('book-comments').value || undefined
+            comments: document.getElementById('book-comments').value || undefined,
+            type: bookType
         };
         
-        // Only include fields that have values
+        // Only include fields that have values (but always include type)
         Object.keys(updatedBook).forEach(key => {
-            if (updatedBook[key] === undefined || updatedBook[key] === '') {
+            if (key !== 'type' && (updatedBook[key] === undefined || updatedBook[key] === '')) {
                 delete updatedBook[key];
             }
         });

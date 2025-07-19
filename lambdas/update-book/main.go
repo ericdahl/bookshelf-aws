@@ -33,6 +33,8 @@ type BookUpdateRequest struct {
 	StartedAt  *string  `json:"started_at,omitempty"`
 	FinishedAt *string  `json:"finished_at,omitempty"`
 	Thumbnail  *string  `json:"thumbnail,omitempty"`
+	Type       *string  `json:"type,omitempty"`
+	Comments   *string  `json:"comments,omitempty"`
 }
 
 // Book represents a book record for DynamoDB.
@@ -50,6 +52,8 @@ type Book struct {
 	StartedAt  string   `dynamodbav:"started_at,omitempty"`
 	FinishedAt string   `dynamodbav:"finished_at,omitempty"`
 	Thumbnail  string   `dynamodbav:"thumbnail,omitempty"`
+	Type       string   `dynamodbav:"type,omitempty"`
+	Comments   string   `dynamodbav:"comments,omitempty"`
 }
 
 // APIBook is the structure for the API response.
@@ -65,6 +69,8 @@ type APIBook struct {
 	StartedAt  string   `json:"started_at,omitempty"`
 	FinishedAt string   `json:"finished_at,omitempty"`
 	Thumbnail  string   `json:"thumbnail"`
+	Type       string   `json:"type,omitempty"`
+	Comments   string   `json:"comments,omitempty"`
 }
 
 func init() {
@@ -75,8 +81,47 @@ func init() {
 	ddbClient = dynamodb.NewFromConfig(cfg)
 }
 
+// getUserID extracts the user ID from the JWT claims in the request context
+func getUserID(request events.APIGatewayProxyRequest) (string, error) {
+	// JWT claims are available in the request context when using API Gateway JWT authorizer
+	// Try different possible structures
+	
+	// Try accessing claims directly under authorizer
+	if sub, ok := request.RequestContext.Authorizer["sub"].(string); ok {
+		return sub, nil
+	}
+	
+	// Try accessing under jwt key
+	if jwt, ok := request.RequestContext.Authorizer["jwt"].(map[string]interface{}); ok {
+		if claims, ok := jwt["claims"].(map[string]interface{}); ok {
+			if sub, ok := claims["sub"].(string); ok {
+				return sub, nil
+			}
+		}
+		// Try direct access from jwt
+		if sub, ok := jwt["sub"].(string); ok {
+			return sub, nil
+		}
+	}
+	
+	// Debug: log the actual structure
+	log.Printf("Authorizer context: %+v", request.RequestContext.Authorizer)
+	
+	return "", fmt.Errorf("no sub claim found in JWT context")
+}
+
 // handler is the Lambda function handler.
 func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	// Extract user ID from JWT claims
+	userID, err := getUserID(request)
+	if err != nil {
+		log.Printf("Error extracting user ID: %v", err)
+		return events.APIGatewayProxyResponse{
+			StatusCode: http.StatusUnauthorized,
+			Body:       "Unauthorized: Could not extract user ID",
+		}, nil
+	}
+
 	// Get the book ID from path parameters
 	bookID := request.PathParameters["id"]
 	if bookID == "" {
@@ -111,13 +156,13 @@ func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 		}
 	}
 
-	// First, get the existing book to ensure it exists
+	// First, get the existing book to ensure it exists and belongs to this user
 	tableNameVar := tableName
 	getInput := &dynamodb.GetItemInput{
 		TableName: &tableNameVar,
 		Key: map[string]types.AttributeValue{
-			"PK": &types.AttributeValueMemberS{Value: "BOOK#" + bookID},
-			"SK": &types.AttributeValueMemberS{Value: "BOOK"},
+			"PK": &types.AttributeValueMemberS{Value: "USER#" + userID},
+			"SK": &types.AttributeValueMemberS{Value: "BOOK#" + bookID},
 		},
 	}
 
@@ -180,6 +225,12 @@ func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 	if updateRequest.Thumbnail != nil {
 		updatedBook.Thumbnail = *updateRequest.Thumbnail
 	}
+	if updateRequest.Type != nil {
+		updatedBook.Type = *updateRequest.Type
+	}
+	if updateRequest.Comments != nil {
+		updatedBook.Comments = *updateRequest.Comments
+	}
 
 	// Marshal the updated book to DynamoDB attributes
 	item, err := attributevalue.MarshalMap(updatedBook)
@@ -219,6 +270,8 @@ func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 		StartedAt:  updatedBook.StartedAt,
 		FinishedAt: updatedBook.FinishedAt,
 		Thumbnail:  updatedBook.Thumbnail,
+		Type:       updatedBook.Type,
+		Comments:   updatedBook.Comments,
 	}
 
 	body, err := json.Marshal(apiBook)

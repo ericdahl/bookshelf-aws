@@ -27,8 +27,47 @@ func init() {
 	ddbClient = dynamodb.NewFromConfig(cfg)
 }
 
+// getUserID extracts the user ID from the JWT claims in the request context
+func getUserID(request events.APIGatewayProxyRequest) (string, error) {
+	// JWT claims are available in the request context when using API Gateway JWT authorizer
+	// Try different possible structures
+	
+	// Try accessing claims directly under authorizer
+	if sub, ok := request.RequestContext.Authorizer["sub"].(string); ok {
+		return sub, nil
+	}
+	
+	// Try accessing under jwt key
+	if jwt, ok := request.RequestContext.Authorizer["jwt"].(map[string]interface{}); ok {
+		if claims, ok := jwt["claims"].(map[string]interface{}); ok {
+			if sub, ok := claims["sub"].(string); ok {
+				return sub, nil
+			}
+		}
+		// Try direct access from jwt
+		if sub, ok := jwt["sub"].(string); ok {
+			return sub, nil
+		}
+	}
+	
+	// Debug: log the actual structure
+	log.Printf("Authorizer context: %+v", request.RequestContext.Authorizer)
+	
+	return "", fmt.Errorf("no sub claim found in JWT context")
+}
+
 // handler is the Lambda function handler.
 func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	// Extract user ID from JWT claims
+	userID, err := getUserID(request)
+	if err != nil {
+		log.Printf("Error extracting user ID: %v", err)
+		return events.APIGatewayProxyResponse{
+			StatusCode: http.StatusUnauthorized,
+			Body:       "Unauthorized: Could not extract user ID",
+		}, nil
+	}
+
 	// Get the book ID from path parameters
 	bookID := request.PathParameters["id"]
 	if bookID == "" {
@@ -38,13 +77,13 @@ func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 		}, nil
 	}
 
-	// First, check if the book exists
+	// First, check if the book exists and belongs to this user
 	tableNameVar := tableName
 	getInput := &dynamodb.GetItemInput{
 		TableName: &tableNameVar,
 		Key: map[string]types.AttributeValue{
-			"PK": &types.AttributeValueMemberS{Value: "BOOK#" + bookID},
-			"SK": &types.AttributeValueMemberS{Value: "BOOK"},
+			"PK": &types.AttributeValueMemberS{Value: "USER#" + userID},
+			"SK": &types.AttributeValueMemberS{Value: "BOOK#" + bookID},
 		},
 	}
 
@@ -68,8 +107,8 @@ func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 	deleteInput := &dynamodb.DeleteItemInput{
 		TableName: &tableNameVar,
 		Key: map[string]types.AttributeValue{
-			"PK": &types.AttributeValueMemberS{Value: "BOOK#" + bookID},
-			"SK": &types.AttributeValueMemberS{Value: "BOOK"},
+			"PK": &types.AttributeValueMemberS{Value: "USER#" + userID},
+			"SK": &types.AttributeValueMemberS{Value: "BOOK#" + bookID},
 		},
 	}
 

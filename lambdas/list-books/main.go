@@ -24,24 +24,38 @@ var ddbClient *dynamodb.Client
 
 // Book represents a book record from DynamoDB.
 type Book struct {
-	ID        string `dynamodbav:"id"`
-	PK        string `dynamodbav:"PK"`
-	SK        string `dynamodbav:"SK"`
-	Title     string `dynamodbav:"Title"`
-	Author    string `dynamodbav:"Author"`
-	Series    string `dynamodbav:"Series"`
-	Status    string `dynamodbav:"status"`
-	Thumbnail string `dynamodbav:"thumbnail"`
+	ID         string   `dynamodbav:"id"`
+	PK         string   `dynamodbav:"PK"`
+	SK         string   `dynamodbav:"SK"`
+	Title      string   `dynamodbav:"Title"`
+	Author     string   `dynamodbav:"Author"`
+	Series     string   `dynamodbav:"Series"`
+	Status     string   `dynamodbav:"status"`
+	Rating     *int     `dynamodbav:"rating,omitempty"`
+	Review     string   `dynamodbav:"review,omitempty"`
+	Tags       []string `dynamodbav:"tags,omitempty"`
+	StartedAt  string   `dynamodbav:"started_at,omitempty"`
+	FinishedAt string   `dynamodbav:"finished_at,omitempty"`
+	Thumbnail  string   `dynamodbav:"thumbnail"`
+	Type       string   `dynamodbav:"type,omitempty"`
+	Comments   string   `dynamodbav:"comments,omitempty"`
 }
 
 // APIBook is the structure for the API response.
 type APIBook struct {
-	ID        string `json:"id"`
-	Title     string `json:"title"`
-	Author    string `json:"author"`
-	Series    string `json:"series"`
-	Status    string `json:"status"`
-	Thumbnail string `json:"thumbnail"`
+	ID         string   `json:"id"`
+	Title      string   `json:"title"`
+	Author     string   `json:"author"`
+	Series     string   `json:"series"`
+	Status     string   `json:"status"`
+	Rating     *int     `json:"rating,omitempty"`
+	Review     string   `json:"review,omitempty"`
+	Tags       []string `json:"tags,omitempty"`
+	StartedAt  string   `json:"started_at,omitempty"`
+	FinishedAt string   `json:"finished_at,omitempty"`
+	Thumbnail  string   `json:"thumbnail"`
+	Type       string   `json:"type,omitempty"`
+	Comments   string   `json:"comments,omitempty"`
 }
 
 func init() {
@@ -52,29 +66,66 @@ func init() {
 	ddbClient = dynamodb.NewFromConfig(cfg)
 }
 
+// getUserID extracts the user ID from the JWT claims in the request context
+func getUserID(request events.APIGatewayProxyRequest) (string, error) {
+	// JWT claims are available in the request context when using API Gateway JWT authorizer
+	// Try different possible structures
+	
+	// Try accessing claims directly under authorizer
+	if sub, ok := request.RequestContext.Authorizer["sub"].(string); ok {
+		return sub, nil
+	}
+	
+	// Try accessing under jwt key
+	if jwt, ok := request.RequestContext.Authorizer["jwt"].(map[string]interface{}); ok {
+		if claims, ok := jwt["claims"].(map[string]interface{}); ok {
+			if sub, ok := claims["sub"].(string); ok {
+				return sub, nil
+			}
+		}
+		// Try direct access from jwt
+		if sub, ok := jwt["sub"].(string); ok {
+			return sub, nil
+		}
+	}
+	
+	// Debug: log the actual structure
+	log.Printf("Authorizer context: %+v", request.RequestContext.Authorizer)
+	
+	return "", fmt.Errorf("no sub claim found in JWT context")
+}
+
 
 // handler is the Lambda function handler.
 func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	// Authentication is now handled by API Gateway JWT authorizer
-	// The request has already been validated by the time it reaches this Lambda
+	// Extract user ID from JWT claims
+	userID, err := getUserID(request)
+	if err != nil {
+		log.Printf("Error extracting user ID: %v", err)
+		return events.APIGatewayProxyResponse{
+			StatusCode: http.StatusUnauthorized,
+			Body:       "Unauthorized: Could not extract user ID",
+		}, nil
+	}
 
 	status, statusOK := request.QueryStringParameters["status"]
 	tableNameVar := tableName
+	userPK := "USER#" + userID
 
 	var books []Book
-	var err error
 
 	if statusOK {
-		// If status is provided, query the GSI
-		gsiName := "status-gsi"
+		// If status is provided, we need to query the user's books and filter by status
+		// Since we changed the data model, we query by PK and filter by status
 		queryInput := &dynamodb.QueryInput{
 			TableName:              &tableNameVar,
-			IndexName:              &gsiName,
-			KeyConditionExpression: aws.String("#status = :status"),
+			KeyConditionExpression: aws.String("PK = :pk"),
+			FilterExpression:       aws.String("#status = :status"),
 			ExpressionAttributeNames: map[string]string{
 				"#status": "status",
 			},
 			ExpressionAttributeValues: map[string]types.AttributeValue{
+				":pk":     &types.AttributeValueMemberS{Value: userPK},
 				":status": &types.AttributeValueMemberS{Value: status},
 			},
 		}
@@ -92,13 +143,19 @@ func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 			}
 		}
 	} else {
-		// If no status parameter, scan the table
-		var scanOutput *dynamodb.ScanOutput
-		scanOutput, err = ddbClient.Scan(context.TODO(), &dynamodb.ScanInput{
-			TableName: &tableNameVar,
-		})
+		// If no status parameter, query all books for this user
+		queryInput := &dynamodb.QueryInput{
+			TableName:              &tableNameVar,
+			KeyConditionExpression: aws.String("PK = :pk"),
+			ExpressionAttributeValues: map[string]types.AttributeValue{
+				":pk": &types.AttributeValueMemberS{Value: userPK},
+			},
+		}
+
+		var queryOutput *dynamodb.QueryOutput
+		queryOutput, err = ddbClient.Query(context.TODO(), queryInput)
 		if err == nil {
-			err = attributevalue.UnmarshalListOfMaps(scanOutput.Items, &books)
+			err = attributevalue.UnmarshalListOfMaps(queryOutput.Items, &books)
 		}
 	}
 
@@ -125,12 +182,19 @@ func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 	apiBooks := make([]APIBook, len(books))
 	for i, book := range books {
 		apiBooks[i] = APIBook{
-			ID:        book.ID,
-			Title:     book.Title,
-			Author:    book.Author,
-			Series:    book.Series,
-			Status:    book.Status,
-			Thumbnail: book.Thumbnail,
+			ID:         book.ID,
+			Title:      book.Title,
+			Author:     book.Author,
+			Series:     book.Series,
+			Status:     book.Status,
+			Rating:     book.Rating,
+			Review:     book.Review,
+			Tags:       book.Tags,
+			StartedAt:  book.StartedAt,
+			FinishedAt: book.FinishedAt,
+			Thumbnail:  book.Thumbnail,
+			Type:       book.Type,
+			Comments:   book.Comments,
 		}
 	}
 
