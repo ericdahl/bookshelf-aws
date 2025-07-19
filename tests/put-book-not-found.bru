@@ -7,7 +7,11 @@ meta {
 put {
   url: {{base_url}}/books/99999999-9999-9999-9999-999999999999
   body: json
-  auth: inherit
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{jwt_token}}
 }
 
 body:json {

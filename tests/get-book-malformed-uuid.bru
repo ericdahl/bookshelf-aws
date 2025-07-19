@@ -7,7 +7,11 @@ meta {
 get {
   url: {{base_url}}/books/not-a-valid-uuid
   body: none
-  auth: inherit
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{jwt_token}}
 }
 
 assert {

@@ -7,7 +7,11 @@ meta {
 get {
   url: {{base_url}}/books/f6a7b8c9-d0e1-2345-6789-0abcdef12345
   body: none
-  auth: inherit
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{jwt_token}}
 }
 
 assert {

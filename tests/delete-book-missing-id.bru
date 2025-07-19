@@ -6,7 +6,11 @@ meta {
 
 delete {
   url: {{base_url}}/books/
-  auth: inherit
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{jwt_token}}
 }
 
 assert {

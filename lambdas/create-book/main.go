@@ -82,31 +82,33 @@ func init() {
 
 // getUserID extracts the user ID from the JWT claims in the request context
 func getUserID(request events.APIGatewayProxyRequest) (string, error) {
-	// JWT claims are available in the request context when using API Gateway JWT authorizer
-	// Try different possible structures
+	// For HTTP API with JWT authorizer, the claims are nested under jwt.claims
+	jwt, ok := request.RequestContext.Authorizer["jwt"].(map[string]interface{})
+	if !ok {
+		log.Printf("Authorizer context: %+v", request.RequestContext.Authorizer)
+		return "", fmt.Errorf("no jwt found in authorizer context")
+	}
 	
-	// Try accessing claims directly under authorizer
-	if sub, ok := request.RequestContext.Authorizer["sub"].(string); ok {
+	claims, ok := jwt["claims"].(map[string]interface{})
+	if !ok {
+		log.Printf("JWT context: %+v", jwt)
+		return "", fmt.Errorf("no claims found in jwt context")
+	}
+	
+	// Try accessing the 'sub' claim first (standard JWT subject claim)
+	if sub, ok := claims["sub"].(string); ok {
 		return sub, nil
 	}
 	
-	// Try accessing under jwt key
-	if jwt, ok := request.RequestContext.Authorizer["jwt"].(map[string]interface{}); ok {
-		if claims, ok := jwt["claims"].(map[string]interface{}); ok {
-			if sub, ok := claims["sub"].(string); ok {
-				return sub, nil
-			}
-		}
-		// Try direct access from jwt
-		if sub, ok := jwt["sub"].(string); ok {
-			return sub, nil
-		}
+	// Try cognito:username as fallback
+	if cognitoUsername, ok := claims["cognito:username"].(string); ok {
+		return cognitoUsername, nil
 	}
 	
-	// Debug: log the actual structure
-	log.Printf("Authorizer context: %+v", request.RequestContext.Authorizer)
+	// Debug: log the actual claims structure if we can't find the user ID
+	log.Printf("Claims: %+v", claims)
 	
-	return "", fmt.Errorf("no sub claim found in JWT context")
+	return "", fmt.Errorf("no user ID found in JWT claims")
 }
 
 // handler is the Lambda function handler.
