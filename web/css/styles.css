@@ -49,6 +49,15 @@ button:hover {
 
 .user-controls {
     margin-left: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.user-email {
+    color: #ecf0f1;
+    font-size: 14px;
+    font-weight: 500;
 }
 
 .primary-button {

@@ -42,6 +42,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initialize the application
     function initApp() {
+        // Display user email
+        displayUserEmail();
+        
         // Load all books from the server
         loadBooks();
 
@@ -1265,6 +1268,15 @@ document.addEventListener('DOMContentLoaded', function() {
         localStorage.removeItem('idToken');
         localStorage.removeItem('refreshToken');
         localStorage.removeItem('userEmail');
+    }
+
+    function displayUserEmail() {
+        const userEmail = localStorage.getItem('userEmail');
+        const userEmailElement = document.getElementById('user-email');
+        
+        if (userEmail && userEmailElement) {
+            userEmailElement.textContent = userEmail;
+        }
     }
 
     function signOut() {
