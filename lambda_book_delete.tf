@@ -55,6 +55,11 @@ resource "aws_iam_role_policy_attachment" "delete_book_lambda_basic_execution" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
+resource "aws_cloudwatch_log_group" "delete_book_lambda_log_group" {
+  name              = "/aws/lambda/delete-book"
+  retention_in_days = 7
+}
+
 resource "aws_lambda_function" "delete_book_lambda" {
   function_name = "delete-book"
   role          = aws_iam_role.delete_book_lambda_exec_role.arn
@@ -68,6 +73,7 @@ resource "aws_lambda_function" "delete_book_lambda" {
     aws_iam_role_policy_attachment.delete_book_lambda_basic_execution,
     aws_iam_role_policy_attachment.delete_book_lambda_dynamodb_delete,
     null_resource.build_delete_book_lambda,
+    aws_cloudwatch_log_group.delete_book_lambda_log_group,
   ]
 }
 

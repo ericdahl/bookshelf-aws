@@ -58,6 +58,11 @@ resource "aws_iam_role_policy_attachment" "list_books_lambda_basic_execution" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
+resource "aws_cloudwatch_log_group" "list_books_lambda_log_group" {
+  name              = "/aws/lambda/list-books"
+  retention_in_days = 7
+}
+
 resource "aws_lambda_function" "list_books_lambda" {
   function_name = "list-books"
   role          = aws_iam_role.list_books_lambda_exec_role.arn
@@ -67,10 +72,10 @@ resource "aws_lambda_function" "list_books_lambda" {
   filename         = "${local.lambda_source_dir}/dist/list-books.zip"
   source_code_hash = local.source_hash
 
-
   depends_on = [
     aws_iam_role_policy_attachment.list_books_lambda_basic_execution,
     aws_iam_role_policy_attachment.list_books_lambda_dynamodb_read,
     null_resource.build_list_books_lambda,
+    aws_cloudwatch_log_group.list_books_lambda_log_group,
   ]
 } 

@@ -34,6 +34,11 @@ resource "aws_iam_role_policy_attachment" "search_books_lambda_basic_execution" 
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
+resource "aws_cloudwatch_log_group" "search_books_lambda_log_group" {
+  name              = "/aws/lambda/search-books"
+  retention_in_days = 7
+}
+
 resource "aws_lambda_function" "search_books_lambda" {
   function_name = "search-books"
   role          = aws_iam_role.search_books_lambda_exec_role.arn
@@ -46,6 +51,7 @@ resource "aws_lambda_function" "search_books_lambda" {
   depends_on = [
     aws_iam_role_policy_attachment.search_books_lambda_basic_execution,
     null_resource.build_search_books_lambda,
+    aws_cloudwatch_log_group.search_books_lambda_log_group,
   ]
 }
 

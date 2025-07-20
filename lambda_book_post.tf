@@ -52,6 +52,11 @@ resource "aws_iam_role_policy_attachment" "create_book_lambda_basic_execution" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
+resource "aws_cloudwatch_log_group" "create_book_lambda_log_group" {
+  name              = "/aws/lambda/create-book"
+  retention_in_days = 7
+}
+
 resource "aws_lambda_function" "create_book_lambda" {
   function_name = "create-book"
   role          = aws_iam_role.create_book_lambda_exec_role.arn
@@ -65,6 +70,7 @@ resource "aws_lambda_function" "create_book_lambda" {
     aws_iam_role_policy_attachment.create_book_lambda_basic_execution,
     aws_iam_role_policy_attachment.create_book_lambda_dynamodb_write,
     null_resource.build_create_book_lambda,
+    aws_cloudwatch_log_group.create_book_lambda_log_group,
   ]
 }
 
