@@ -10,7 +10,7 @@
   "filesCount": 2,
   "presets": {
     "requestType": "http",
-    "requestUrl": "https://wsl1l84gmi.execute-api.us-east-1.amazonaws.com/prod"
+    "requestUrl": "https://qklqndn9th.execute-api.us-east-1.amazonaws.com/prod"
   },
   "auth": {
     "type": "bearer",

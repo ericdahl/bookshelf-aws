@@ -188,6 +188,7 @@ Recommended: [AWS SAM](https://docs.aws.amazon.com/serverless-application-model/
   * cloudfront
   * common JWT library/logic
   * per user ratings/comments/etc
+  * user profile image with gravatar
 
 
 ---

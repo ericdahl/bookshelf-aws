@@ -6,7 +6,7 @@ echo "Setting up authentication for tests..."
 echo "Using test user credentials from configuration..."
 TEST_EMAIL="testuser@example.com"
 TEST_PASSWORD="TestPassword123!"
-CLIENT_ID="1uq6q3bbn21s9fddqccv5tjlv0"
+CLIENT_ID="5ulggimd8m012tc6f5fjknphfv"
 
 echo "Authenticating user: $TEST_EMAIL"
 
