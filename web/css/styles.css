@@ -60,6 +60,16 @@ button:hover {
     font-weight: 500;
 }
 
+.user-email-link {
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.user-email-link:hover {
+    color: #3498db;
+    text-decoration: underline;
+}
+
 .primary-button {
     background-color: #2ecc71;
 }

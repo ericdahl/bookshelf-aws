@@ -80,13 +80,15 @@ resource "aws_cognito_user_pool_client" "bookshelf_client" {
     "email",
     "email_verified",
     "name",
-    "preferred_username"
+    "preferred_username",
+    "zoneinfo"
   ]
 
   write_attributes = [
     "email",
     "name",
-    "preferred_username"
+    "preferred_username",
+    "zoneinfo"
   ]
 }
 

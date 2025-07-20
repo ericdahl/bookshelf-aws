@@ -134,4 +134,22 @@ resource "aws_s3_object" "error_404_html" {
   source       = "web/404.html"
   content_type = "text/html"
   etag         = filemd5("web/404.html")
+}
+
+# Upload profile page
+resource "aws_s3_object" "profile_html" {
+  bucket       = aws_s3_bucket.bookshelf_web.id
+  key          = "profile.html"
+  source       = "web/profile.html"
+  content_type = "text/html"
+  etag         = filemd5("web/profile.html")
+}
+
+# Upload profile JavaScript
+resource "aws_s3_object" "profile_js" {
+  bucket       = aws_s3_bucket.bookshelf_web.id
+  key          = "js/profile.js"
+  source       = "web/js/profile.js"
+  content_type = "application/javascript"
+  etag         = filemd5("web/js/profile.js")
 } 
