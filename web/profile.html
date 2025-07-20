@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://sdk.amazonaws.com/js/aws-sdk-2.1691.0.min.js"></script>
     <script src="https://unpkg.com/amazon-cognito-identity-js@6.3.7/dist/amazon-cognito-identity.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <script src="js/config.js"></script>
     <style>
         .profile-container {
@@ -27,6 +28,59 @@
             margin-bottom: 2rem;
             padding-bottom: 1rem;
             border-bottom: 1px solid #eee;
+        }
+        
+        .profile-avatar-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 4px solid #3498db;
+            margin-bottom: 1rem;
+        }
+        
+        .profile-avatar-fallback {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background-color: #6c757d;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 60px;
+            color: white;
+            margin-bottom: 1rem;
+        }
+        
+        .profile-email-display {
+            font-size: 18px;
+            font-weight: 500;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+        
+        .gravatar-info {
+            font-size: 14px;
+            color: #6c757d;
+            text-align: center;
+        }
+        
+        .gravatar-info a {
+            color: #3498db;
+            text-decoration: none;
+        }
+        
+        .gravatar-info a:hover {
+            text-decoration: underline;
         }
         
         .back-button {
@@ -175,6 +229,16 @@
         
         <div id="success-message" class="success-message hidden"></div>
         <div id="error-message" class="error-message hidden"></div>
+        
+        <div class="profile-avatar-section">
+            <div id="profile-avatar-container"></div>
+            <div id="profile-email-display" class="profile-email-display"></div>
+            <div class="gravatar-info">
+                Profile image provided by <a href="https://gravatar.com" target="_blank">Gravatar</a>
+                <br>
+                <small>Change your avatar at gravatar.com using this email address</small>
+            </div>
+        </div>
         
         <form class="profile-form" id="profile-form">
             <div class="form-group">

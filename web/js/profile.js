@@ -13,9 +13,49 @@ document.addEventListener('DOMContentLoaded', function() {
     const loadingOverlay = document.getElementById('loading-overlay');
     const successMessage = document.getElementById('success-message');
     const errorMessage = document.getElementById('error-message');
+    const profileAvatarContainer = document.getElementById('profile-avatar-container');
+    const profileEmailDisplay = document.getElementById('profile-email-display');
 
     // Initialize the profile page
     initProfile();
+
+    // Generate Gravatar URL from email address
+    function generateGravatarUrl(email, size = 120) {
+        // Create MD5 hash of email (lowercase and trimmed)
+        const trimmedEmail = email.toLowerCase().trim();
+        const hash = CryptoJS.MD5(trimmedEmail).toString();
+        return `https://www.gravatar.com/avatar/${hash}?s=${size}&d=mp&r=g`;
+    }
+
+    // Display user avatar
+    function displayUserAvatar(email) {
+        if (email && profileAvatarContainer && profileEmailDisplay) {
+            // Update email display
+            profileEmailDisplay.textContent = email;
+            
+            // Create profile image
+            const gravatarUrl = generateGravatarUrl(email, 120);
+            
+            // Create image element
+            const profileImg = document.createElement('img');
+            profileImg.src = gravatarUrl;
+            profileImg.alt = 'Profile Avatar';
+            profileImg.className = 'profile-avatar';
+            
+            // Handle image load error (fallback to default icon)
+            profileImg.onerror = function() {
+                this.style.display = 'none';
+                const fallbackIcon = document.createElement('div');
+                fallbackIcon.className = 'profile-avatar-fallback';
+                fallbackIcon.innerHTML = '<i class="fas fa-user"></i>';
+                this.parentNode.appendChild(fallbackIcon);
+            };
+            
+            // Clear existing content and add image
+            profileAvatarContainer.innerHTML = '';
+            profileAvatarContainer.appendChild(profileImg);
+        }
+    }
 
     // Initialize profile page
     function initProfile() {
@@ -37,6 +77,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const userEmail = localStorage.getItem('userEmail');
         if (userEmail) {
             emailInput.value = userEmail;
+            displayUserAvatar(userEmail);
         }
 
         // Get user attributes from Cognito

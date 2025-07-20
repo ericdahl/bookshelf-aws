@@ -60,14 +60,37 @@ button:hover {
     font-weight: 500;
 }
 
-.user-email-link {
+.user-profile-link {
     text-decoration: none;
+    transition: opacity 0.2s;
+    display: flex;
+    align-items: center;
+}
+
+.user-profile-link:hover {
+    opacity: 0.8;
+}
+
+.profile-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid #ecf0f1;
+    transition: border-color 0.2s;
+}
+
+.profile-icon:hover {
+    border-color: #3498db;
+}
+
+.profile-icon-fallback {
+    font-size: 32px;
+    color: #ecf0f1;
     transition: color 0.2s;
 }
 
-.user-email-link:hover {
+.profile-icon-fallback:hover {
     color: #3498db;
-    text-decoration: underline;
 }
 
 .primary-button {

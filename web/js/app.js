@@ -42,8 +42,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initialize the application
     function initApp() {
-        // Display user email
-        displayUserEmail();
+        // Display user profile
+        displayUserProfile();
         
         // Load all books from the server
         loadBooks();
@@ -1270,12 +1270,41 @@ document.addEventListener('DOMContentLoaded', function() {
         localStorage.removeItem('userEmail');
     }
 
-    function displayUserEmail() {
+    // Generate Gravatar URL from email address
+    function generateGravatarUrl(email, size = 32) {
+        // Create MD5 hash of email (lowercase and trimmed)
+        const trimmedEmail = email.toLowerCase().trim();
+        const hash = CryptoJS.MD5(trimmedEmail).toString();
+        return `https://www.gravatar.com/avatar/${hash}?s=${size}&d=mp&r=g`;
+    }
+
+    function displayUserProfile() {
         const userEmail = localStorage.getItem('userEmail');
-        const userEmailElement = document.getElementById('user-email');
+        const userProfileElement = document.getElementById('user-profile');
         
-        if (userEmail && userEmailElement) {
-            userEmailElement.textContent = userEmail;
+        if (userEmail && userProfileElement) {
+            // Create profile image
+            const gravatarUrl = generateGravatarUrl(userEmail, 32);
+            
+            // Create image element
+            const profileImg = document.createElement('img');
+            profileImg.src = gravatarUrl;
+            profileImg.alt = 'Profile';
+            profileImg.className = 'profile-icon';
+            profileImg.title = userEmail; // Show email on hover
+            
+            // Handle image load error (fallback to default icon)
+            profileImg.onerror = function() {
+                this.style.display = 'none';
+                const fallbackIcon = document.createElement('i');
+                fallbackIcon.className = 'fas fa-user-circle profile-icon-fallback';
+                fallbackIcon.title = userEmail;
+                this.parentNode.appendChild(fallbackIcon);
+            };
+            
+            // Clear existing content and add image
+            userProfileElement.innerHTML = '';
+            userProfileElement.appendChild(profileImg);
         }
     }
 

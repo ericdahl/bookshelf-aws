@@ -10,6 +10,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <script src="https://sdk.amazonaws.com/js/aws-sdk-2.1691.0.min.js"></script>
     <script src="https://unpkg.com/amazon-cognito-identity-js@6.3.7/dist/amazon-cognito-identity.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <script src="js/config.js"></script>
 </head>
 <body>
@@ -29,7 +30,7 @@
                 <button id="search-collection-button" title="Search Your Collection"><i class="fas fa-book"></i></button>
             </div>
             <div class="user-controls">
-                <a href="profile.html" id="user-email" class="user-email user-email-link"></a>
+                <a href="profile.html" id="user-profile" class="user-profile-link"></a>
                 <button id="sign-out-button" class="auth-button" onclick="signOut()">Sign Out</button>
             </div>
         </div>
