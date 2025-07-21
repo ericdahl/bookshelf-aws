@@ -58,6 +58,16 @@ resource "aws_apigatewayv2_route" "get_api_books_route" {
   authorizer_id      = aws_apigatewayv2_authorizer.cognito_authorizer.id
 }
 
+# Recommendations routes
+resource "aws_apigatewayv2_route" "recommendations_route_api" {
+  api_id    = aws_apigatewayv2_api.books_api.id
+  route_key = "GET /api/recommendations"
+  target    = "integrations/${aws_apigatewayv2_integration.recommendations_lambda_integration.id}"
+
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito_authorizer.id
+}
+
 resource "aws_lambda_permission" "api_gateway_permission" {
   statement_id  = "AllowAPIGatewayInvoke"
   action        = "lambda:InvokeFunction"
