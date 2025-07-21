@@ -46,7 +46,7 @@ resource "aws_cloudfront_distribution" "bookshelf_web" {
   origin {
     domain_name = replace(aws_apigatewayv2_api.books_api.api_endpoint, "https://", "")
     origin_id   = "API-Gateway"
-    origin_path = ""
+    origin_path = "/prod"
 
     custom_origin_config {
       http_port              = 443
@@ -77,7 +77,7 @@ resource "aws_cloudfront_distribution" "bookshelf_web" {
     compress                 = true
     viewer_protocol_policy   = "https-only"
     cache_policy_id          = "4135ea2d-6df8-44a3-9df3-4b5a84be39ad" # CachingOptimized - respects origin cache headers
-    origin_request_policy_id = "88a5eaf4-2fd4-4709-b370-b4c650ea3fcf" # CORS-S3Origin - forwards headers/cookies
+    origin_request_policy_id = "b689b0a8-53d0-40ab-baf2-68738e2966ac" # AllViewerExceptHostHeader - forwards all headers except Host
 
     function_association {
       event_type   = "viewer-request"
@@ -97,20 +97,6 @@ resource "aws_cloudfront_distribution" "bookshelf_web" {
     cloudfront_default_certificate = true
   }
 
-  # Error pages
-  custom_error_response {
-    error_code            = 403
-    response_code         = 200
-    response_page_path    = "/index.html"
-    error_caching_min_ttl = 0
-  }
-
-  custom_error_response {
-    error_code            = 404
-    response_code         = 200
-    response_page_path    = "/index.html"
-    error_caching_min_ttl = 0
-  }
 
   tags = {
     Name = "bookshelf-web-distribution"

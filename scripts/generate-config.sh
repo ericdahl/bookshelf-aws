@@ -14,12 +14,11 @@ if ! command -v terraform &> /dev/null; then
 fi
 
 # Get Terraform outputs
-API_URL=$(terraform output -raw api_gateway_invoke_url)
 USER_POOL_ID=$(terraform output -raw cognito_user_pool_id)
 CLIENT_ID=$(terraform output -raw cognito_user_pool_client_id)
 
 # Validate outputs
-if [ -z "$API_URL" ] || [ -z "$USER_POOL_ID" ] || [ -z "$CLIENT_ID" ]; then
+if [ -z "$USER_POOL_ID" ] || [ -z "$CLIENT_ID" ]; then
     echo "Error: Failed to get all required Terraform outputs"
     exit 1
 fi
@@ -30,8 +29,8 @@ cat > web/js/config.js << EOF
 // This file contains environment-specific configuration
 // Auto-generated from Terraform outputs - DO NOT EDIT MANUALLY
 const APP_CONFIG = {
-    // API Gateway URL
-    API_BASE_URL: '${API_URL}',
+    // API URL - uses CloudFront distribution with relative path
+    API_BASE_URL: '/api',
     
     // Cognito configuration
     COGNITO: {
@@ -46,6 +45,6 @@ window.APP_CONFIG = APP_CONFIG;
 EOF
 
 echo "Configuration file generated at web/js/config.js"
-echo "API_BASE_URL: ${API_URL}"
+echo "API_BASE_URL: /api"
 echo "COGNITO.userPoolId: ${USER_POOL_ID}"
 echo "COGNITO.clientId: ${CLIENT_ID}"

@@ -2,8 +2,8 @@
 // This file contains environment-specific configuration
 // Auto-generated from Terraform outputs - DO NOT EDIT MANUALLY
 const APP_CONFIG = {
-    // API Gateway URL
-    API_BASE_URL: 'https://o4egm6gq21.execute-api.us-east-1.amazonaws.com/prod',
+    // API URL - uses CloudFront distribution with relative path
+    API_BASE_URL: '/api',
     
     // Cognito configuration
     COGNITO: {
