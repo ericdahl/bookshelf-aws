@@ -773,3 +773,119 @@ main {
 .book-card.search-result {
     cursor: default;
 }
+
+/* Recommendations Section */
+.recommendations-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 1rem;
+    padding: 1rem;
+    margin-bottom: 2rem;
+}
+
+.recommendation-card {
+    background: #fff;
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+    border-left: 4px solid #3498db;
+}
+
+.recommendation-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.recommendation-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+}
+
+.recommendation-author {
+    font-size: 0.95rem;
+    color: #7f8c8d;
+    margin-bottom: 0.75rem;
+    font-style: italic;
+}
+
+.recommendation-genre {
+    font-size: 0.9rem;
+    color: #34495e;
+    margin-bottom: 0.75rem;
+}
+
+.recommendation-reason {
+    font-size: 0.9rem;
+    color: #555;
+    line-height: 1.5;
+    margin-bottom: 1rem;
+    border-left: 3px solid #ecf0f1;
+    padding-left: 0.75rem;
+    font-style: italic;
+}
+
+.add-recommendation-btn {
+    background-color: #27ae60;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.add-recommendation-btn:hover {
+    background-color: #219a52;
+}
+
+.add-recommendation-btn i {
+    font-size: 0.8rem;
+}
+
+.error-message {
+    text-align: center;
+    color: #e74c3c;
+    font-style: italic;
+    padding: 2rem;
+}
+
+.no-recommendations {
+    text-align: center;
+    color: #7f8c8d;
+    font-style: italic;
+    padding: 2rem;
+}
+
+.shelf-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.shelf-header .button.secondary {
+    background-color: #95a5a6;
+    color: white;
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.shelf-header .button.secondary:hover {
+    background-color: #7f8c8d;
+}
+
+.shelf-header .button.secondary:disabled {
+    background-color: #bdc3c7;
+    cursor: not-allowed;
+}

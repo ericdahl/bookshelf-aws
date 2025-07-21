@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const API = {
         BOOKS: `${API_BASE_URL}/books`,
         SEARCH: `${API_BASE_URL}/search`, // Google Books search endpoint
+        RECOMMENDATIONS: `${API_BASE_URL}/recommendations`,
         BOOK_STATUS: (id) => `${API_BASE_URL}/books/${id}`,
         BOOK_DETAILS: (id) => `${API_BASE_URL}/books/${id}`,
         DELETE_BOOK: (id) => `${API_BASE_URL}/books/${id}`
@@ -32,6 +33,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const fullViewButton = document.getElementById('full-view');
     const compactViewButton = document.getElementById('compact-view');
     const shelvesContainer = document.querySelector('.shelves-container');
+    const refreshRecommendationsButton = document.getElementById('refresh-recommendations');
+    const recommendationsContainer = document.getElementById('recommendations-container');
 
     // Current book being viewed/edited
     let currentBook = null;
@@ -47,6 +50,9 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Load all books from the server
         loadBooks();
+
+        // Load recommendations
+        loadRecommendations();
 
         // Set up event listeners
         setupEventListeners();
@@ -266,6 +272,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 searchGoogleBooks();
             }
         });
+
+        // Recommendations
+        refreshRecommendationsButton.addEventListener('click', loadRecommendations);
         
         // Close search results
         closeSearch.addEventListener('click', () => {
@@ -1343,6 +1352,65 @@ document.addEventListener('DOMContentLoaded', function() {
             'Content-Type': 'application/json'
         };
     }
+
+    // Load recommendations from the API
+    function loadRecommendations() {
+        const refreshIcon = refreshRecommendationsButton.querySelector('i');
+        refreshIcon.classList.add('fa-spin');
+        refreshRecommendationsButton.disabled = true;
+
+        fetch(API.RECOMMENDATIONS, {
+            headers: getAuthHeaders()
+        })
+        .then(response => response.json())
+        .then(data => {
+            displayRecommendations(data.recommendations);
+        })
+        .catch(error => {
+            console.error('Error loading recommendations:', error);
+            recommendationsContainer.innerHTML = '<p class="error-message">Unable to load recommendations. Please try again later.</p>';
+        })
+        .finally(() => {
+            refreshIcon.classList.remove('fa-spin');
+            refreshRecommendationsButton.disabled = false;
+        });
+    }
+
+    // Display recommendations in the UI
+    function displayRecommendations(recommendations) {
+        recommendationsContainer.innerHTML = '';
+        
+        if (!recommendations || recommendations.length === 0) {
+            recommendationsContainer.innerHTML = '<p class="no-recommendations">No recommendations available. Add some books to your collection first!</p>';
+            return;
+        }
+
+        recommendations.forEach(rec => {
+            const recommendationCard = document.createElement('div');
+            recommendationCard.className = 'recommendation-card';
+            recommendationCard.innerHTML = `
+                <div class="recommendation-content">
+                    <h4 class="recommendation-title">${rec.title}</h4>
+                    <p class="recommendation-author">by ${rec.author}</p>
+                    <p class="recommendation-genre"><strong>Genre:</strong> ${rec.genre}</p>
+                    <p class="recommendation-reason">${rec.reason}</p>
+                    <button class="add-recommendation-btn" onclick="searchForBook('${rec.title.replace(/'/g, "\\'")} ${rec.author.replace(/'/g, "\\'")}')">
+                        <i class="fas fa-search"></i> Find This Book
+                    </button>
+                </div>
+            `;
+            recommendationsContainer.appendChild(recommendationCard);
+        });
+    }
+
+    // Search for a recommended book to add to collection
+    function searchForBook(query) {
+        searchInput.value = query;
+        searchGoogleBooks();
+    }
+
+    // Make searchForBook available globally
+    window.searchForBook = searchForBook;
 
     // Make signOut function available globally
     window.signOut = signOut;
