@@ -21,17 +21,17 @@ resource "aws_s3_bucket_website_configuration" "bookshelf_web" {
   }
 }
 
-# S3 bucket public access block
+# S3 bucket public access block - secure configuration
 resource "aws_s3_bucket_public_access_block" "bookshelf_web" {
   bucket = aws_s3_bucket.bookshelf_web.id
 
-  block_public_acls       = false
-  block_public_policy     = false
-  ignore_public_acls      = false
-  restrict_public_buckets = false
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
 }
 
-# S3 bucket policy for public read access
+# S3 bucket policy for CloudFront access via OAC
 resource "aws_s3_bucket_policy" "bookshelf_web" {
   bucket     = aws_s3_bucket.bookshelf_web.id
   depends_on = [aws_s3_bucket_public_access_block.bookshelf_web]
@@ -40,11 +40,18 @@ resource "aws_s3_bucket_policy" "bookshelf_web" {
     Version = "2012-10-17"
     Statement = [
       {
-        Sid       = "PublicReadGetObject"
-        Effect    = "Allow"
-        Principal = "*"
-        Action    = "s3:GetObject"
-        Resource  = "${aws_s3_bucket.bookshelf_web.arn}/*"
+        Sid    = "AllowCloudFrontServicePrincipal"
+        Effect = "Allow"
+        Principal = {
+          Service = "cloudfront.amazonaws.com"
+        }
+        Action   = "s3:GetObject"
+        Resource = "${aws_s3_bucket.bookshelf_web.arn}/*"
+        Condition = {
+          StringEquals = {
+            "AWS:SourceArn" = aws_cloudfront_distribution.bookshelf_web.arn
+          }
+        }
       },
     ]
   })

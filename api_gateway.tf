@@ -43,7 +43,17 @@ resource "aws_apigatewayv2_route" "get_books_route" {
   api_id    = aws_apigatewayv2_api.books_api.id
   route_key = "GET /books"
   target    = "integrations/${aws_apigatewayv2_integration.lambda_integration.id}"
-  
+
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito_authorizer.id
+}
+
+# API routes with /api prefix for CloudFront
+resource "aws_apigatewayv2_route" "get_api_books_route" {
+  api_id    = aws_apigatewayv2_api.books_api.id
+  route_key = "GET /api/books"
+  target    = "integrations/${aws_apigatewayv2_integration.lambda_integration.id}"
+
   authorization_type = "JWT"
   authorizer_id      = aws_apigatewayv2_authorizer.cognito_authorizer.id
 }

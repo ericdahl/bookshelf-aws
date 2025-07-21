@@ -187,6 +187,7 @@ Recommended: [AWS SAM](https://docs.aws.amazon.com/serverless-application-model/
   * avoid hard-coding endpoints
   * cloudfront
   * common JWT library/logic
+  * cache-control headers on S3/API
 
 
 ---
