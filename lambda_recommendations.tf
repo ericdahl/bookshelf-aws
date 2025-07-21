@@ -36,15 +36,37 @@ data "aws_iam_policy_document" "recommendations_dynamodb_policy" {
   }
 }
 
+data "aws_iam_policy_document" "recommendations_bedrock_policy" {
+  statement {
+    actions = [
+      "bedrock:InvokeModel"
+    ]
+    resources = [
+      "arn:aws:bedrock:*:*:foundation-model/amazon.titan-text-express-v1"
+    ]
+  }
+}
+
 resource "aws_iam_policy" "recommendations_dynamodb_policy" {
   name        = "RecommendationsDynamoDBPolicy"
   description = "Policy to allow querying the Books DynamoDB table"
   policy      = data.aws_iam_policy_document.recommendations_dynamodb_policy.json
 }
 
+resource "aws_iam_policy" "recommendations_bedrock_policy" {
+  name        = "RecommendationsBedrockPolicy"
+  description = "Policy to allow invoking Titan model in Bedrock"
+  policy      = data.aws_iam_policy_document.recommendations_bedrock_policy.json
+}
+
 resource "aws_iam_role_policy_attachment" "recommendations_lambda_dynamodb_read" {
   role       = aws_iam_role.recommendations_lambda_exec_role.name
   policy_arn = aws_iam_policy.recommendations_dynamodb_policy.arn
+}
+
+resource "aws_iam_role_policy_attachment" "recommendations_lambda_bedrock_invoke" {
+  role       = aws_iam_role.recommendations_lambda_exec_role.name
+  policy_arn = aws_iam_policy.recommendations_bedrock_policy.arn
 }
 
 resource "aws_iam_role_policy_attachment" "recommendations_lambda_basic_execution" {
@@ -62,6 +84,7 @@ resource "aws_lambda_function" "recommendations_lambda" {
   role          = aws_iam_role.recommendations_lambda_exec_role.arn
   handler       = "bootstrap"
   runtime       = "provided.al2"
+  timeout       = 30
 
   filename         = "${local.recommendations_lambda_source_dir}/dist/recommendations.zip"
   source_code_hash = local.recommendations_source_hash
@@ -69,6 +92,7 @@ resource "aws_lambda_function" "recommendations_lambda" {
   depends_on = [
     aws_iam_role_policy_attachment.recommendations_lambda_basic_execution,
     aws_iam_role_policy_attachment.recommendations_lambda_dynamodb_read,
+    aws_iam_role_policy_attachment.recommendations_lambda_bedrock_invoke,
     null_resource.build_recommendations_lambda,
     aws_cloudwatch_log_group.recommendations_lambda_log_group,
   ]
