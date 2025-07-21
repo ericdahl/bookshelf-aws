@@ -63,39 +63,21 @@ resource "aws_cloudfront_distribution" "bookshelf_web" {
     target_origin_id       = "S3-${aws_s3_bucket.bookshelf_web.bucket}"
     compress               = true
     viewer_protocol_policy = "redirect-to-https"
+    cache_policy_id        = "4135ea2d-6df8-44a3-9df3-4b5a84be39ad" # CachingOptimized - respects origin cache headers
 
-    forwarded_values {
-      query_string = false
-      cookies {
-        forward = "none"
-      }
-    }
-
-    min_ttl     = 0
-    default_ttl = 86400
-    max_ttl     = 31536000
+    # Remove forwarded_values, min_ttl, default_ttl, max_ttl when using cache_policy_id
   }
 
   # Cache behavior for API routes
   ordered_cache_behavior {
-    path_pattern           = "/api/*"
-    allowed_methods        = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
-    cached_methods         = ["GET", "HEAD", "OPTIONS"]
-    target_origin_id       = "API-Gateway"
-    compress               = true
-    viewer_protocol_policy = "https-only"
-
-    forwarded_values {
-      query_string = true
-      headers      = ["Authorization", "Content-Type", "Origin", "Referer", "Host"]
-      cookies {
-        forward = "all"
-      }
-    }
-
-    min_ttl     = 0
-    default_ttl = 0
-    max_ttl     = 0
+    path_pattern             = "/api/*"
+    allowed_methods          = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
+    cached_methods           = ["GET", "HEAD", "OPTIONS"]
+    target_origin_id         = "API-Gateway"
+    compress                 = true
+    viewer_protocol_policy   = "https-only"
+    cache_policy_id          = "4135ea2d-6df8-44a3-9df3-4b5a84be39ad" # CachingOptimized - respects origin cache headers
+    origin_request_policy_id = "88a5eaf4-2fd4-4709-b370-b4c650ea3fcf" # CORS-S3Origin - forwards headers/cookies
 
     function_association {
       event_type   = "viewer-request"
@@ -134,7 +116,7 @@ resource "aws_cloudfront_distribution" "bookshelf_web" {
     Name = "bookshelf-web-distribution"
   }
 
-  depends_on = [ aws_apigatewayv2_api.books_api ]
+  depends_on = [aws_apigatewayv2_api.books_api]
 }
 
 # Output the CloudFront domain name
