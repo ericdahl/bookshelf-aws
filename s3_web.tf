@@ -1,3 +1,6 @@
+# Data source for current AWS region
+data "aws_region" "current" {}
+
 # S3 bucket for static website hosting
 resource "aws_s3_bucket" "bookshelf_web" {
   bucket = "bookshelf-web-${random_id.bucket_suffix.hex}"
@@ -85,11 +88,19 @@ resource "aws_s3_object" "app_js" {
 }
 
 resource "aws_s3_object" "config_js" {
-  bucket       = aws_s3_bucket.bookshelf_web.id
-  key          = "js/config.js"
-  source       = "web/js/config.js"
+  bucket = aws_s3_bucket.bookshelf_web.id
+  key    = "js/config.js"
+  content = templatefile("web/js/config.js", {
+    cognito_user_pool_id        = aws_cognito_user_pool.bookshelf_user_pool.id
+    cognito_user_pool_client_id = aws_cognito_user_pool_client.bookshelf_client.id
+    aws_region                  = data.aws_region.current.name
+  })
   content_type = "application/javascript"
-  etag         = filemd5("web/js/config.js")
+  etag = md5(templatefile("web/js/config.js", {
+    cognito_user_pool_id        = aws_cognito_user_pool.bookshelf_user_pool.id
+    cognito_user_pool_client_id = aws_cognito_user_pool_client.bookshelf_client.id
+    aws_region                  = data.aws_region.current.name
+  }))
 }
 
 # Upload favicon
