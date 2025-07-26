@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', function() {
         BOOKS: `${API_BASE_URL}/books`,
         SEARCH: `${API_BASE_URL}/search`, // Google Books search endpoint
         RECOMMENDATIONS: `${API_BASE_URL}/recommendations`,
+        EXPORT: `${API_BASE_URL}/export`,
         BOOK_STATUS: (id) => `${API_BASE_URL}/books/${id}`,
         BOOK_DETAILS: (id) => `${API_BASE_URL}/books/${id}`,
         DELETE_BOOK: (id) => `${API_BASE_URL}/books/${id}`
@@ -35,6 +36,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const shelvesContainer = document.querySelector('.shelves-container');
     const refreshRecommendationsButton = document.getElementById('refresh-recommendations');
     const recommendationsContainer = document.getElementById('recommendations-container');
+    const exportButton = document.getElementById('export-button');
 
     // Current book being viewed/edited
     let currentBook = null;
@@ -275,6 +277,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Recommendations
         refreshRecommendationsButton.addEventListener('click', loadRecommendations);
+        
+        // Export functionality
+        if (exportButton) {
+            exportButton.addEventListener('click', handleExport);
+        }
         
         // Close search results
         closeSearch.addEventListener('click', () => {
@@ -1412,6 +1419,83 @@ document.addEventListener('DOMContentLoaded', function() {
     // Make searchForBook available globally
     window.searchForBook = searchForBook;
 
-    // Make signOut function available globally
+    // Handle export functionality
+    function handleExport() {
+        // Show export options dialog
+        const format = prompt('Choose export format:\n1. CSV (spreadsheet-friendly)\n2. JSON (complete data)\n\nEnter 1 or 2:', '1');
+        
+        if (format === null) return; // User cancelled
+        
+        let exportFormat;
+        if (format === '1' || format.toLowerCase() === 'csv') {
+            exportFormat = 'csv';
+        } else if (format === '2' || format.toLowerCase() === 'json') {
+            exportFormat = 'json';
+        } else {
+            alert('Invalid format selected. Please choose 1 for CSV or 2 for JSON.');
+            return;
+        }
+        
+        // Show status filter options
+        const statusFilter = prompt('Filter by reading status (optional):\n1. All books\n2. Want to Read\n3. Currently Reading\n4. Read\n\nEnter 1-4 (default: All books):', '1');
+        
+        let filters = {};
+        if (statusFilter === '2') {
+            filters.status = 'WANT_TO_READ';
+        } else if (statusFilter === '3') {
+            filters.status = 'READING';
+        } else if (statusFilter === '4') {
+            filters.status = 'read';
+        }
+        // Default is no filter (all books)
+        
+        exportBooks(exportFormat, filters);
+    }
+
+    // Export books function
+    function exportBooks(format, filters = {}) {
+        showLoading();
+        
+        const requestBody = {
+            format: format,
+            filters: filters
+        };
+        
+        fetch(API.EXPORT, {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify(requestBody)
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Export failed: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            hideLoading();
+            
+            // Create a temporary link to download the file
+            const link = document.createElement('a');
+            link.href = data.download_url;
+            link.download = data.filename;
+            link.style.display = 'none';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            // Show success message
+            alert(`Export successful! Your ${format.toUpperCase()} file is downloading.\n\nFile: ${data.filename}\nExpires: ${new Date(data.expires_at).toLocaleString()}`);
+        })
+        .catch(error => {
+            console.error('Error exporting books:', error);
+            hideLoading();
+            alert('Failed to export books. Please try again.');
+        });
+    }
+
+    // Make functions available globally
+    window.searchForBook = searchForBook;
     window.signOut = signOut;
+    window.handleExport = handleExport;
 });

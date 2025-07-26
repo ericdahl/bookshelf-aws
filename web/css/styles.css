@@ -47,6 +47,26 @@ button:hover {
     background-color: #2980b9;
 }
 
+.export-button {
+    background-color: #27ae60;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    margin-right: 10px;
+    transition: background-color 0.2s;
+}
+
+.export-button:hover {
+    background-color: #219a52;
+}
+
+.export-button i {
+    margin-right: 5px;
+}
+
 .user-controls {
     margin-left: 20px;
     display: flex;
