@@ -331,6 +331,9 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Load saved view preference
         loadViewPreference();
+        
+        // Setup export modal listeners
+        setupExportModalListeners();
     }
     
     // Set the view mode (full or compact)
@@ -1421,35 +1424,60 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Handle export functionality
     function handleExport() {
-        // Show export options dialog
-        const format = prompt('Choose export format:\n1. CSV (spreadsheet-friendly)\n2. JSON (complete data)\n\nEnter 1 or 2:', '1');
+        showExportModal();
+    }
+    
+    // Show the export modal
+    function showExportModal() {
+        const exportModal = document.getElementById('export-modal');
+        exportModal.classList.remove('hidden');
         
-        if (format === null) return; // User cancelled
-        
-        let exportFormat;
-        if (format === '1' || format.toLowerCase() === 'csv') {
-            exportFormat = 'csv';
-        } else if (format === '2' || format.toLowerCase() === 'json') {
-            exportFormat = 'json';
-        } else {
-            alert('Invalid format selected. Please choose 1 for CSV or 2 for JSON.');
-            return;
+        // Focus trap for accessibility
+        const firstFocusable = exportModal.querySelector('input[type="radio"]:checked');
+        if (firstFocusable) {
+            firstFocusable.focus();
         }
+    }
+    
+    // Hide the export modal
+    function hideExportModal() {
+        const exportModal = document.getElementById('export-modal');
+        exportModal.classList.add('hidden');
+    }
+    
+    // Setup export modal event listeners
+    function setupExportModalListeners() {
+        const exportModal = document.getElementById('export-modal');
+        const closeButton = document.getElementById('close-export-modal');
+        const cancelButton = document.getElementById('cancel-export');
+        const confirmButton = document.getElementById('confirm-export');
+        const backdrop = exportModal.querySelector('.export-modal-backdrop');
         
-        // Show status filter options
-        const statusFilter = prompt('Filter by reading status (optional):\n1. All books\n2. Want to Read\n3. Currently Reading\n4. Read\n\nEnter 1-4 (default: All books):', '1');
+        // Close modal events
+        closeButton.addEventListener('click', hideExportModal);
+        cancelButton.addEventListener('click', hideExportModal);
+        backdrop.addEventListener('click', hideExportModal);
         
-        let filters = {};
-        if (statusFilter === '2') {
-            filters.status = 'WANT_TO_READ';
-        } else if (statusFilter === '3') {
-            filters.status = 'READING';
-        } else if (statusFilter === '4') {
-            filters.status = 'read';
-        }
-        // Default is no filter (all books)
+        // Confirm export
+        confirmButton.addEventListener('click', () => {
+            const selectedFormat = document.querySelector('input[name="export-format"]:checked').value;
+            const selectedStatus = document.querySelector('input[name="export-status"]:checked').value;
+            
+            let filters = {};
+            if (selectedStatus !== 'all') {
+                filters.status = selectedStatus;
+            }
+            
+            hideExportModal();
+            exportBooks(selectedFormat, filters);
+        });
         
-        exportBooks(exportFormat, filters);
+        // Escape key to close modal
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && !exportModal.classList.contains('hidden')) {
+                hideExportModal();
+            }
+        });
     }
 
     // Export books function

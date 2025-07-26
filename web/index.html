@@ -134,6 +134,77 @@
                 </div>
             </div>
         </div>
+        
+        <div id="export-modal" class="hidden">
+            <div class="export-modal-backdrop"></div>
+            <div class="export-modal-content">
+                <div class="export-modal-header">
+                    <h3>Export Your Books</h3>
+                    <button id="close-export-modal" class="close-button">×</button>
+                </div>
+                <div class="export-modal-body">
+                    <div class="export-option-group">
+                        <h4>Export Format</h4>
+                        <div class="export-format-options">
+                            <label class="export-option">
+                                <input type="radio" name="export-format" value="csv" checked>
+                                <div class="option-content">
+                                    <div class="option-title">CSV (Spreadsheet)</div>
+                                    <div class="option-description">Perfect for Excel, Google Sheets, or other spreadsheet applications</div>
+                                </div>
+                            </label>
+                            <label class="export-option">
+                                <input type="radio" name="export-format" value="json">
+                                <div class="option-content">
+                                    <div class="option-title">JSON (Complete Data)</div>
+                                    <div class="option-description">Contains all data including comments and technical details</div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="export-option-group">
+                        <h4>Filter by Reading Status</h4>
+                        <div class="export-status-options">
+                            <label class="export-option">
+                                <input type="radio" name="export-status" value="all" checked>
+                                <div class="option-content">
+                                    <div class="option-title">All Books</div>
+                                    <div class="option-description">Export your entire collection</div>
+                                </div>
+                            </label>
+                            <label class="export-option">
+                                <input type="radio" name="export-status" value="WANT_TO_READ">
+                                <div class="option-content">
+                                    <div class="option-title">Want to Read</div>
+                                    <div class="option-description">Only books in your "Want to Read" shelf</div>
+                                </div>
+                            </label>
+                            <label class="export-option">
+                                <input type="radio" name="export-status" value="READING">
+                                <div class="option-content">
+                                    <div class="option-title">Currently Reading</div>
+                                    <div class="option-description">Only books you're currently reading</div>
+                                </div>
+                            </label>
+                            <label class="export-option">
+                                <input type="radio" name="export-status" value="read">
+                                <div class="option-content">
+                                    <div class="option-title">Read</div>
+                                    <div class="option-description">Only books you've finished reading</div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="export-modal-footer">
+                    <button id="cancel-export" class="button secondary">Cancel</button>
+                    <button id="confirm-export" class="button primary">
+                        <i class="fas fa-download"></i> Export Books
+                    </button>
+                </div>
+            </div>
+        </div>
     </main>
     
     <div id="loading-overlay" class="hidden">
