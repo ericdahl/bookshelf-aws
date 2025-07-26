@@ -1,8 +1,3 @@
-resource "random_string" "suffix" {
-  length  = 8
-  special = false
-  upper   = false
-}
 
 provider "aws" {
   region = "us-east-1"

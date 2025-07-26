@@ -1,6 +1,7 @@
 # S3 bucket for book exports
 resource "aws_s3_bucket" "exports" {
-  bucket = "bookshelf-exports-${random_string.suffix.result}"
+  bucket_prefix = "bookshelf-exports-"
+  force_destroy = true
 }
 
 # Configure bucket to be private by default
