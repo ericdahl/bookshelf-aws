@@ -32,21 +32,4 @@ resource "aws_s3_bucket_lifecycle_configuration" "exports" {
   }
 }
 
-# Server-side encryption
-resource "aws_s3_bucket_server_side_encryption_configuration" "exports" {
-  bucket = aws_s3_bucket.exports.id
 
-  rule {
-    apply_server_side_encryption_by_default {
-      sse_algorithm = "AES256"
-    }
-  }
-}
-
-# Versioning (disabled to save costs)
-resource "aws_s3_bucket_versioning" "exports" {
-  bucket = aws_s3_bucket.exports.id
-  versioning_configuration {
-    status = "Disabled"
-  }
-}
