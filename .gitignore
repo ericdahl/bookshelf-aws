@@ -16,4 +16,6 @@ codebase.md
 tests/environments/
 
 **/bin/
-**/dist/    
+**/dist/
+lambdas/*/bootstrap
+*.zip    
